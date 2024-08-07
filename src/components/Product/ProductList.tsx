@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import WriteButton from "../Main/WriteButton";
+import { Toaster, toast } from "sonner";
+import { useTheme } from "next-themes";
 interface Post {
   id: number;
   title: string;
@@ -14,7 +16,14 @@ interface Post {
 }
 
 export default function ProductList() {
-  const [posts, setPosts] = useState([]);
+  const { theme = "system" } = useTheme();
+  const [toastShown, setToastShown] = useState<boolean>(false);
+  const reportClick = () => {
+    if (!toastShown) {
+      toast("신고 하기");
+      setToastShown(true);
+    }
+  };
   const filterPosts = {
     post: [
       {
@@ -57,7 +66,7 @@ export default function ProductList() {
         price: "11,000",
         content: "공학관 앞에서 직거래 원해요 쿨거",
         likes: 7,
-        saleStatus: "판매중",
+        saleStatus: "예약중",
         createdAt: "30분 전",
         representativePhoto: "/img/yogurt.jpeg",
       },
@@ -125,6 +134,10 @@ export default function ProductList() {
 
   return (
     <div className="mt-4 w-full max-w-screen-sm mx-auto relative">
+      <Toaster
+        theme={theme as "light" | "dark" | "system"}
+        className="bg-white border border-emerald-500 text-black font-semibold text-2xl"
+      />
       {filterPosts.post.map((post: Post) => (
         <div key={post.id} className="flex mb-4 pb-4 border-b-2">
           <div className="relative size-24 items-center rounded-md overflow-hidden mx-4">
@@ -137,7 +150,7 @@ export default function ProductList() {
           <div className="flex flex-col gap-1 flex-grow">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-bold">{post.title}</h3>
-              <button className="size-6 ml-auto mr-2">
+              <button onClick={reportClick} className="size-6 ml-auto mr-2">
                 <svg
                   data-slot="icon"
                   fill="none"
@@ -160,7 +173,12 @@ export default function ProductList() {
             <div className="flex justify-between items-center w-full">
               <div className="flex items-center gap-1">
                 {post.saleStatus === "판매 완료" && (
-                  <span className="text-xs font-semibold bg-gray-500 text-white p-1">
+                  <span className="text-xs rounded-md font-semibold bg-gray-500 text-white p-1">
+                    {post.saleStatus}
+                  </span>
+                )}
+                {post.saleStatus === "예약중" && (
+                  <span className="text-xs rounded-md font-semibold bg-emerald-500 text-white p-1">
                     {post.saleStatus}
                   </span>
                 )}
