@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export default function Category() {
   return (
-    <div className="w-full h-12 border border-gray-200 flex justify-between items-center *:text-gray-400 text-md font-semibold">
+    <div className="w-full bg-white h-12 border border-gray-200 flex justify-between items-center *:text-gray-400 text-md font-semibold">
       <Link to="/?category=all" className="flex-1 text-center items-center">
         전체
       </Link>

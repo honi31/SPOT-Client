@@ -4,10 +4,12 @@ import ProductList from "../components/Product/ProductList";
 
 export default function Product() {
   return (
-    <>
-      <Header />
-      <Category />
+    <div>
+      <div className="sticky top-0 z-40">
+        <Header />
+        <Category />
+      </div>
       <ProductList />
-    </>
+    </div>
   );
 }
