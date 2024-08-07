@@ -17,7 +17,7 @@ const useSignupForm = () => {
 
   const onSubmit = (data: any) => {
     console.log("Form data:", data);
-    navigate("/");
+    navigate("/product");
   };
 
   return {
