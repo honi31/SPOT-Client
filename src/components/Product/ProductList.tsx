@@ -150,23 +150,6 @@ export default function ProductList() {
           <div className="flex flex-col gap-1 flex-grow">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-bold">{post.title}</h3>
-              <button onClick={reportClick} className="size-6 ml-auto mr-2">
-                <svg
-                  data-slot="icon"
-                  fill="none"
-                  stroke-width="1.5"
-                  stroke="gray"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden="true"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z"
-                  ></path>
-                </svg>
-              </button>
             </div>
             <span className="text-sm text-gray-500">{post.createdAt}</span>
 
