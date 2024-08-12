@@ -19,7 +19,7 @@ export default function Category() {
         to="/?category=book"
         className="flex-1 text-center hover:text-black"
       >
-        교재 서적
+        교재
       </Link>
       <Link
         to="/?category=production"
