@@ -5,6 +5,7 @@ import NextSignup from "./pages/nextSignup";
 import Product from "./pages/product";
 import Home from "./pages/home";
 import Login from "./pages/login";
+import Main from "./pages/main";
 function App() {
   return (
     <Router>
@@ -14,6 +15,7 @@ function App() {
         <Route path="register/signup" element={<NextSignup />}></Route>
         <Route path="/login" element={<Login />}></Route>
         <Route path="/product" element={<Product />}></Route>
+        <Route path="/main" element={<Main />}></Route>
       </Routes>
     </Router>
   );
