@@ -23,7 +23,7 @@ export default function Login() {
       </div>
       <div className="flex flex-col w-full gap-2 px-3 py-6">
         <Link
-          to="/product"
+          to="/main"
           className="w-full font-semibold bg-emerald-500 text-white text-center rounded-md hover:bg-emerald-600 focus:animate-pulse py-2 text-xl"
         >
           로그인
