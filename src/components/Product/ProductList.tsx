@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import WriteButton from "../Main/WriteButton";
-import { Toaster, toast } from "sonner";
-import { useTheme } from "next-themes";
+import ReportModal from "../Modal/Report";
 interface Post {
   id: number;
   title: string;
@@ -16,14 +15,8 @@ interface Post {
 }
 
 export default function ProductList() {
-  const { theme = "system" } = useTheme();
-  const [toastShown, setToastShown] = useState<boolean>(false);
-  const reportClick = () => {
-    if (!toastShown) {
-      toast("신고 하기");
-      setToastShown(true);
-    }
-  };
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   const filterPosts = {
     post: [
       {
@@ -133,54 +126,29 @@ export default function ProductList() {
   // const filteredPosts = posts.filter((post) => !post.isDeleted);
 
   return (
-    <div className="mt-4 w-full max-w-screen-sm mx-auto relative">
-      <Toaster
-        theme={theme as "light" | "dark" | "system"}
-        className="bg-white border border-emerald-500 text-black font-semibold text-2xl"
-      />
-      {filterPosts.post.map((post: Post) => (
-        <div key={post.id} className="flex mb-4 pb-4 border-b-2">
-          <div className="relative size-24 items-center rounded-md overflow-hidden mx-4">
-            <img
-              src={post.representativePhoto}
-              alt="대표 사진"
-              className="size-full"
-            />
-          </div>
-          <div className="flex flex-col gap-1 flex-grow">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-bold">{post.title}</h3>
+    <>
+      <div className="mt-4 w-full max-w-screen-sm mx-auto relative">
+        {filterPosts.post.map((post: Post) => (
+          <div key={post.id} className="flex mb-4 pb-4 border-b-2">
+            <div className="relative size-24 items-center rounded-md overflow-hidden mx-4">
+              <img
+                src={post.representativePhoto}
+                alt="대표 사진"
+                className="size-full"
+              />
             </div>
-            <span className="text-sm text-gray-500">{post.createdAt}</span>
-
-            <div className="flex justify-between items-center w-full">
-              <div className="flex items-center gap-1">
-                {post.saleStatus === "판매 완료" && (
-                  <span className="text-xs rounded-md font-semibold bg-gray-500 text-white p-1">
-                    {post.saleStatus}
-                  </span>
-                )}
-                {post.saleStatus === "예약중" && (
-                  <span className="text-xs rounded-md font-semibold bg-emerald-500 text-white p-1">
-                    {post.saleStatus}
-                  </span>
-                )}
-                <span className="text-md text-gray-500 text-center items-center">
-                  {post.sellerNickname}
-                </span>
-                <span className="text-gray-400">|</span>
-                <p className="text-md text-gray-600 font-bold mr-8 text-center items-center">
-                  {post.price}원
-                </p>
-              </div>
-              <div className="text-sm text-gray-600 ml-auto mr-4 items-center flex">
-                {" "}
-                <div className="size-5 items-center">
+            <div className="flex flex-col gap-1 flex-grow">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold">{post.title}</h3>
+                <div
+                  className="size-5 mr-4"
+                  onClick={() => setIsModalOpen(true)}
+                >
                   <svg
                     data-slot="icon"
                     fill="none"
                     stroke-width="1.5"
-                    stroke="red"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg"
                     aria-hidden="true"
@@ -188,23 +156,67 @@ export default function ProductList() {
                     <path
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+                      d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
                     ></path>
-                  </svg>{" "}
+                  </svg>
                 </div>
-                <span className="text-center items-center ml-1">
+              </div>
+              <span className="text-sm text-gray-500">{post.createdAt}</span>
+
+              <div className="flex justify-between items-center w-full">
+                <div className="flex items-center gap-1">
+                  {post.saleStatus === "판매 완료" && (
+                    <span className="text-xs rounded-md font-semibold bg-gray-500 text-white p-1">
+                      {post.saleStatus}
+                    </span>
+                  )}
+                  {post.saleStatus === "예약중" && (
+                    <span className="text-xs rounded-md font-semibold bg-emerald-500 text-white p-1">
+                      {post.saleStatus}
+                    </span>
+                  )}
+                  <span className="text-md text-gray-500 text-center items-center">
+                    {post.sellerNickname}
+                  </span>
+                  <span className="text-gray-400">|</span>
+                  <p className="text-md text-gray-600 font-bold mr-8 text-center items-center">
+                    {post.price}원
+                  </p>
+                </div>
+                <div className="text-sm text-gray-600 ml-auto mr-4 items-center flex">
                   {" "}
-                  {post.likes}
-                </span>
+                  <div className="size-5 items-center">
+                    <svg
+                      data-slot="icon"
+                      fill="none"
+                      stroke-width="1.5"
+                      stroke="red"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-hidden="true"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+                      ></path>
+                    </svg>{" "}
+                  </div>
+                  <span className="text-center items-center ml-1">
+                    {" "}
+                    {post.likes}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
 
-      <button className="fixed z-50 bottom-0 right-0 my-8 mx-6">
-        <WriteButton />
-      </button>
-    </div>
+        <button className="fixed z-30 bottom-0 right-0 my-8 mx-6">
+          <WriteButton />
+        </button>
+      </div>
+      {isModalOpen && <ReportModal setIsModalOpen={setIsModalOpen} />}
+    </>
   );
 }
