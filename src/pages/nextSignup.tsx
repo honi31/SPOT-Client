@@ -1,9 +1,11 @@
 import Select from "react-select";
 import useSignupForm from "../components/Signup/useSignupForm"; // Import the custom hook
 import { Controller } from "react-hook-form";
+import { useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export default function NextSignup() {
-  const { register, handleSubmit, control, errors } = useSignupForm();
+  const { register, handleSubmit, control, setValue, errors } = useSignupForm();
 
   const options = [
     { value: "컴퓨터공학과", label: "컴퓨터공학과" },
@@ -19,6 +21,20 @@ export default function NextSignup() {
     { value: "화학과", label: "화학과" },
   ];
   const placeholder = "학과를 검색하세요.";
+  const [isCodeSent, setIsCodeSent] = useState(false);
+  const [searchParams] = useSearchParams(); // 쿼리 파라미터 사용
+
+  useEffect(() => {
+    const school = searchParams.get("school");
+
+    if (school === "한국외국어대학교") {
+      setValue("emailDomain", "@hufs.ac.kr");
+    }
+  }, [searchParams, setValue]);
+
+  const handleSendCode = () => {
+    setIsCodeSent(true); // 인증번호 전송 상태 업데이트
+  };
 
   return (
     <div className="flex flex-col py-8 px-5">
@@ -44,17 +60,52 @@ export default function NextSignup() {
           <label htmlFor="email" className="p-1 text-sm font-semibold pt-5">
             이메일
           </label>
-          <input
-            type="text"
-            id="email"
-            placeholder="이메일"
-            className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-5"
-            {...register("email")}
-          />
+          <div className="flex">
+            <input
+              type="text"
+              id="email"
+              placeholder="이메일 아이디"
+              className="w-1/2 border border-gray-300 h-11 p-2 rounded-l-lg mb-2"
+              {...register("email")}
+            />
+            <input
+              type="text"
+              id="emailDomain"
+              className="w-1/2 border border-gray-300 h-11 p-2 rounded-r-lg bg-gray-100"
+              disabled
+              {...register("emailDomain")}
+            />
+            <button
+              type="button"
+              className="ml-2 text-xs border-2 border-emerald-500 text-black rounded-lg h-11 px-4"
+              onClick={handleSendCode}
+            >
+              인증번호 전송
+            </button>
+          </div>
           {errors.email?.message && (
             <p className="text-red-500 mb-0">
               {errors.email?.message?.toString()}
             </p>
+          )}
+
+          {isCodeSent && (
+            <div className="flex">
+              <input
+                type="text"
+                id="verificationCode"
+                placeholder="인증번호 입력"
+                className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-5"
+                {...register("verificationCode")}
+              />
+              <button
+                type="button"
+                className="ml-2 text-xs border-2 border-emerald-500 text-black rounded-lg h-11 px-4"
+                onClick={handleSendCode}
+              >
+                인증번호 확인
+              </button>
+            </div>
           )}
 
           <label htmlFor="password" className="p-1 text-sm font-semibold">

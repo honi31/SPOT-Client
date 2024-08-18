@@ -9,6 +9,7 @@ const useSignupForm = () => {
     handleSubmit,
     control,
     formState: { errors },
+    setValue,
   } = useForm({
     resolver: zodResolver(schema),
   });
@@ -25,6 +26,7 @@ const useSignupForm = () => {
     handleSubmit: handleSubmit(onSubmit),
     control,
     errors,
+    setValue,
   };
 };
 

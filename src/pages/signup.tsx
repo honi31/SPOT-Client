@@ -49,7 +49,7 @@ export default function Signup() {
     } else if (selectedSchool === "") {
       alert("학교를 선택해주세요!");
     } else {
-      navigate("/register/signup");
+      navigate(`/register/signup?school=${selectedSchool}`);
     }
   };
   return (
