@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 import ReportModal from "../Modal/Report";
+import { useNavigate } from "react-router-dom";
 
 interface Post {
   id: number;
@@ -110,6 +111,10 @@ export default function ProductList() {
       },
     ],
   };
+  const navigate = useNavigate();
+  const handleProductClick = (id: number) => {
+    navigate(`/product/${id}`);
+  };
   // useEffect(() => {
   //
   //   axios
@@ -130,7 +135,11 @@ export default function ProductList() {
     <>
       <div className="mt-4 w-full max-w-screen-sm mx-auto relative">
         {filterPosts.post.map((post: Post) => (
-          <div key={post.id} className="flex mb-4 pb-4 border-b-2">
+          <div
+            key={post.id}
+            className="flex mb-4 pb-4 border-b-2"
+            onClick={() => handleProductClick(post.id)}
+          >
             <div className="relative size-24 items-center rounded-md overflow-hidden mx-4">
               <img
                 src={post.representativePhoto}
