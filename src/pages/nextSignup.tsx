@@ -22,6 +22,7 @@ export default function NextSignup() {
   ];
   const placeholder = "학과를 검색하세요.";
   const [isCodeSent, setIsCodeSent] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
   const [searchParams] = useSearchParams(); // 쿼리 파라미터 사용
 
   useEffect(() => {
@@ -35,28 +36,15 @@ export default function NextSignup() {
   const handleSendCode = () => {
     setIsCodeSent(true); // 인증번호 전송 상태 업데이트
   };
+  const handleVerifyCode = () => {
+    setIsVerified(true);
+  };
 
   return (
     <div className="flex flex-col py-8 px-5">
       <h2 className="text-2xl font-bold">회원 정보</h2>
-      <div className="flex flex-col mt-12">
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="nickname" className="p-1 text-sm font-semibold">
-            닉네임
-          </label>
-          <input
-            type="text"
-            id="nickname"
-            placeholder="닉네임"
-            className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-5"
-            {...register("nickname")}
-          />
-          {errors.nickname?.message && (
-            <p className="text-red-500 mb-0">
-              {errors.nickname?.message?.toString()}
-            </p>
-          )}
-
+      {!isVerified ? ( // 이메일 인증 부분
+        <div className="flex flex-col mt-12">
           <label htmlFor="email" className="p-1 text-sm font-semibold pt-5">
             이메일
           </label>
@@ -90,85 +78,109 @@ export default function NextSignup() {
           )}
 
           {isCodeSent && (
-            <div className="flex">
-              <input
-                type="text"
-                id="verificationCode"
-                placeholder="인증번호 입력"
-                className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-5"
-                {...register("verificationCode")}
-              />
+            <>
+              <div className="flex mt-4">
+                <input
+                  type="text"
+                  id="verificationCode"
+                  placeholder="인증번호 입력"
+                  className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-5"
+                  {...register("verificationCode")}
+                />
+              </div>
+
               <button
                 type="button"
-                className="ml-2 text-xs border-2 border-emerald-500 text-black rounded-lg h-11 px-4"
-                onClick={handleSendCode}
+                className="w-full bg-emerald-500 text-white text-center rounded-md hover:bg-emerald-600 focus:animate-pulse py-2 text-xl mt-8"
+                onClick={handleVerifyCode} // 인증 완료 버튼 클릭 시 handleVerifyCode 호출
               >
-                인증번호 확인
+                확인
+              </button>
+            </>
+          )}
+        </div>
+      ) : (
+        // 회원 정보 입력 폼 부분
+        <div className="flex flex-col mt-12">
+          <form onSubmit={handleSubmit}>
+            <label htmlFor="nickname" className="p-1 text-sm font-semibold">
+              닉네임
+            </label>
+            <input
+              type="text"
+              id="nickname"
+              placeholder="닉네임"
+              className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-5"
+              {...register("nickname")}
+            />
+            {errors.nickname?.message && (
+              <p className="text-red-500 mb-0">
+                {errors.nickname?.message?.toString()}
+              </p>
+            )}
+
+            <label htmlFor="password" className="p-1 text-sm font-semibold">
+              비밀번호
+            </label>
+            <input
+              type="password"
+              id="password"
+              placeholder="비밀번호"
+              className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-1"
+              {...register("password")}
+            />
+            {errors.password?.message && (
+              <p className="text-red-500">
+                {errors.password?.message?.toString()}
+              </p>
+            )}
+
+            <input
+              type="password"
+              id="confirmPassword"
+              placeholder="비밀번호 확인"
+              className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-5"
+              {...register("confirmPassword")}
+            />
+            {errors.confirmPassword?.message && (
+              <p className="text-red-500 mb-0">
+                {errors.confirmPassword?.message?.toString()}
+              </p>
+            )}
+
+            <label htmlFor="dept" className="p-1 text-sm font-semibold">
+              학과
+            </label>
+            <Controller
+              name="selectedDept"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  {...field}
+                  options={options}
+                  placeholder="학과를 검색하세요."
+                  isClearable
+                  className="h-12"
+                />
+              )}
+            />
+            {errors.selectedDept?.message && (
+              <p className="text-red-500">
+                {errors.selectedDept?.message?.toString()}
+              </p>
+            )}
+
+            <div className="w-full flex flex-col items-center mt-8">
+              <button
+                type="submit"
+                className="bg-emerald-500 flex h-11 rounded-xl text-white justify-center text-center items-center w-full font-medium text-lg hover:bg-emerald-600 transition-colors"
+              >
+                회원가입
               </button>
             </div>
-          )}
-
-          <label htmlFor="password" className="p-1 text-sm font-semibold">
-            비밀번호
-          </label>
-          <input
-            type="password"
-            id="password"
-            placeholder="비밀번호"
-            className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-1"
-            {...register("password")}
-          />
-          {errors.password?.message && (
-            <p className="text-red-500">
-              {errors.password?.message?.toString()}
-            </p>
-          )}
-
-          <input
-            type="password"
-            id="confirmPassword"
-            placeholder="비밀번호 확인"
-            className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-5"
-            {...register("confirmPassword")}
-          />
-          {errors.confirmPassword?.message && (
-            <p className="text-red-500 mb-0">
-              {errors.confirmPassword?.message?.toString()}
-            </p>
-          )}
-
-          <label htmlFor="dept" className="p-1 text-sm font-semibold">
-            학과
-          </label>
-          <Controller
-            name="selectedDept"
-            control={control}
-            render={({ field }) => (
-              <Select
-                {...field}
-                options={options}
-                placeholder={placeholder}
-                isClearable
-                className="h-12"
-              />
-            )}
-          />
-          {errors.selectedDept?.message && (
-            <p className="text-red-500">
-              {errors.selectedDept?.message?.toString()}
-            </p>
-          )}
-
-          <div className="w-full flex flex-col items-center mt-8">
-            <button
-              type="submit"
-              className="bg-emerald-500 flex h-11 rounded-xl text-white justify-center text-center items-center w-full font-medium text-lg hover:bg-emerald-600 transition-colors"
-            >
-              회원가입
-            </button>
-          </div>
-        </form>
-      </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
