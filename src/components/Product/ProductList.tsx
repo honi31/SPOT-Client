@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import WriteButton from "../Main/WriteButton";
+
 import ReportModal from "../Modal/Report";
+
 interface Post {
   id: number;
   title: string;
@@ -211,10 +212,6 @@ export default function ProductList() {
             </div>
           </div>
         ))}
-
-        <button className="fixed z-30 bottom-0 right-0 my-8 mx-6">
-          <WriteButton />
-        </button>
       </div>
       {isModalOpen && <ReportModal setIsModalOpen={setIsModalOpen} />}
     </>

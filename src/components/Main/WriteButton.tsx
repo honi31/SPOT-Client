@@ -1,6 +1,6 @@
 export default function WriteButton() {
   return (
-    <div className="size-16 items-center p-3 rounded-full bg-emerald-500">
+    <div className="size-10">
       <svg
         data-slot="icon"
         fill="none"
