@@ -6,8 +6,7 @@ import Product from "./pages/product";
 import Home from "./pages/home";
 import Login from "./pages/login";
 import Main from "./pages/main";
-
-import ReportConfirm from "./components/Modal/ReportConfirm";
+import Write from "./pages/write";
 function App() {
   return (
     <Router>
@@ -18,6 +17,7 @@ function App() {
         <Route path="/login" element={<Login />}></Route>
         <Route path="/product" element={<Product />}></Route>
         <Route path="/main" element={<Main />}></Route>
+        <Route path="/write" element={<Write />}></Route>
       </Routes>
     </Router>
   );
