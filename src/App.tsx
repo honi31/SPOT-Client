@@ -7,6 +7,7 @@ import Home from "./pages/home";
 import Login from "./pages/login";
 import Main from "./pages/main";
 import Write from "./pages/write";
+import DetailProduct from "./components/Product/DetailProduct";
 function App() {
   return (
     <Router>
@@ -18,6 +19,7 @@ function App() {
         <Route path="/product" element={<Product />}></Route>
         <Route path="/main" element={<Main />}></Route>
         <Route path="/write" element={<Write />}></Route>
+        <Route path="/product/:id" element={<DetailProduct />}></Route>
       </Routes>
     </Router>
   );

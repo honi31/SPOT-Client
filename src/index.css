@@ -8,7 +8,7 @@ body {
   font-family: "Inter", sans-serif;
   /* background-color: #111827; bg-neutral-900 */
   /* color: white; text-white */
-  max-width: 640px; /* max-w-screen-sm */
+  max-width: 512px; /* max-w-screen-sm */
   margin-left: auto; /* mx-auto */
   margin-right: auto; /* mx-auto */
 }
