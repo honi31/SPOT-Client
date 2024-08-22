@@ -195,7 +195,7 @@ export default function DetailProduct() {
 
         <Link
           className="bg-emerald-500 p-3 rounded-full text-white font-semibold"
-          to=""
+          to="/chat"
         >
           <ChatBubbleOvalLeftEllipsisIcon className="size-9" />
         </Link>

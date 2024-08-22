@@ -8,6 +8,7 @@ import Login from "./pages/login";
 import Main from "./pages/main";
 import Write from "./pages/write";
 import DetailProduct from "./components/Product/DetailProduct";
+import Chat from "./pages/chat";
 function App() {
   return (
     <Router>
@@ -20,6 +21,7 @@ function App() {
         <Route path="/main" element={<Main />}></Route>
         <Route path="/write" element={<Write />}></Route>
         <Route path="/product/:id" element={<DetailProduct />}></Route>
+        <Route path="/chat" element={<Chat />}></Route>
       </Routes>
     </Router>
   );
