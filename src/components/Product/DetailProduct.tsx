@@ -4,8 +4,13 @@ import { ChatBubbleOvalLeftEllipsisIcon } from "@heroicons/react/24/outline";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 import { FaceFrownIcon } from "@heroicons/react/24/outline";
 import { HeartIcon } from "@heroicons/react/24/outline";
+import { HeartIcon as SolidHeartIcon } from "@heroicons/react/24/solid";
+import { useState } from "react";
+
 export default function DetailProduct() {
   const { id } = useParams<{ id: string }>();
+  const [isWished, setIsWished] = useState(false); // 초기 찜 상태를 false로 설정
+  const [likes, setLikes] = useState(0); // 초기 찜 수를 0으로 설정
   const filterPosts = {
     post: [
       {
@@ -106,6 +111,12 @@ export default function DetailProduct() {
     return price.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
   const isOwner = true;
+
+  const handleWishToggle = () => {
+    setIsWished(!isWished); // 찜 상태를 토글
+    setLikes(isWished ? likes - 1 : likes + 1); // 찜 수를 업데이트
+  };
+
   return (
     // 당근 버전
     // <div>
@@ -177,8 +188,14 @@ export default function DetailProduct() {
 
       <div className="flex justify-end p-5">
         <div className="flex flex-col items-center">
-          <HeartIcon className="size-10 text-gray-500" />
-          <span className="items-center text-center">{post.likes}</span>
+          <div onClick={handleWishToggle}>
+            {isWished ? (
+              <SolidHeartIcon className="size-10 text-red-500" />
+            ) : (
+              <HeartIcon className="size-10 text-gray-500" />
+            )}
+          </div>
+          <span className="items-center text-center">{likes}</span>
         </div>
       </div>
 
