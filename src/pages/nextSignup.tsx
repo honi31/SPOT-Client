@@ -3,8 +3,26 @@ import useSignupForm from "../components/Signup/useSignupForm"; // Import the cu
 import { Controller } from "react-hook-form";
 import { useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 
 export default function NextSignup() {
+  const emailSchema = z.object({
+    email: z
+      .string()
+      .nonempty("이메일을 입력해주세요!")
+      .regex(/^[a-zA-Z0-9]+$/, "이메일은 문자와 숫자만 입력할 수 있습니다!"),
+  });
+
+  const {
+    register: registerEmail,
+    handleSubmit: handleEmailSubmit,
+    formState: { errors: emailErrors },
+  } = useForm({
+    resolver: zodResolver(emailSchema),
+  });
+
   const { register, handleSubmit, control, setValue, errors } = useSignupForm();
 
   const options = [
@@ -43,39 +61,40 @@ export default function NextSignup() {
   return (
     <div className="flex flex-col py-8 px-5">
       <h2 className="text-2xl font-bold">회원 정보</h2>
-      {!isVerified ? ( // 이메일 인증 부분
+      {!isVerified ? (
         <div className="flex flex-col mt-12">
-          <label htmlFor="email" className="p-1 text-sm font-semibold pt-5">
-            이메일
-          </label>
-          <div className="flex">
-            <input
-              type="text"
-              id="email"
-              placeholder="이메일 아이디"
-              className="w-1/2 border border-gray-300 h-11 p-2 rounded-l-lg mb-2"
-              {...register("email")}
-            />
-            <input
-              type="text"
-              id="emailDomain"
-              className="w-1/2 border border-gray-300 h-11 p-2 rounded-r-lg bg-gray-100"
-              disabled
-              {...register("emailDomain")}
-            />
-            <button
-              type="button"
-              className="ml-2 text-xs border-2 border-emerald-500 text-black rounded-lg h-11 px-4"
-              onClick={handleSendCode}
-            >
-              인증번호 전송
-            </button>
-          </div>
-          {errors.email?.message && (
-            <p className="text-red-500 mb-0">
-              {errors.email?.message?.toString()}
-            </p>
-          )}
+          <form onSubmit={handleEmailSubmit(handleSendCode)}>
+            <label htmlFor="email" className="p-1 text-sm font-semibold pt-5">
+              이메일
+            </label>
+            <div className="flex">
+              <input
+                type="text"
+                id="email"
+                placeholder="이메일 아이디"
+                className="w-1/2 border border-gray-300 h-11 p-2 rounded-l-lg mb-2"
+                {...registerEmail("email")}
+              />
+              <input
+                type="text"
+                id="emailDomain"
+                className="w-1/2 border border-gray-300 h-11 p-2 rounded-r-lg bg-gray-100"
+                disabled
+                {...register("emailDomain")}
+              />
+              <button
+                type="submit"
+                className="ml-2 text-xs border-2 border-emerald-500 text-black rounded-lg h-11 px-4"
+              >
+                인증번호 전송
+              </button>
+            </div>
+            {emailErrors.email && (
+              <p className="text-red-500 mb-0">
+                {emailErrors.email?.message?.toString()}
+              </p>
+            )}
+          </form>
 
           {isCodeSent && (
             <>
@@ -110,7 +129,7 @@ export default function NextSignup() {
               type="text"
               id="nickname"
               placeholder="닉네임"
-              className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-5"
+              className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-1"
               {...register("nickname")}
             />
             {errors.nickname?.message && (
@@ -118,28 +137,28 @@ export default function NextSignup() {
                 {errors.nickname?.message?.toString()}
               </p>
             )}
-
-            <label htmlFor="password" className="p-1 text-sm font-semibold">
-              비밀번호
-            </label>
-            <input
-              type="password"
-              id="password"
-              placeholder="비밀번호"
-              className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-1"
-              {...register("password")}
-            />
-            {errors.password?.message && (
-              <p className="text-red-500">
-                {errors.password?.message?.toString()}
-              </p>
-            )}
-
+            <div className="mt-5 mb-1">
+              <label htmlFor="password" className="p-1 text-sm font-semibold">
+                비밀번호
+              </label>
+              <input
+                type="password"
+                id="password"
+                placeholder="비밀번호"
+                className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-1"
+                {...register("password")}
+              />
+              {errors.password?.message && (
+                <p className="text-red-500">
+                  {errors.password?.message?.toString()}
+                </p>
+              )}
+            </div>
             <input
               type="password"
               id="confirmPassword"
               placeholder="비밀번호 확인"
-              className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-5"
+              className="w-full border border-gray-300 h-11 rounded-lg p-2 mb-1"
               {...register("confirmPassword")}
             />
             {errors.confirmPassword?.message && (
@@ -147,28 +166,29 @@ export default function NextSignup() {
                 {errors.confirmPassword?.message?.toString()}
               </p>
             )}
-
-            <label htmlFor="dept" className="p-1 text-sm font-semibold">
-              학과
-            </label>
-            <Controller
-              name="selectedDept"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  options={options}
-                  placeholder="학과를 검색하세요."
-                  isClearable
-                  className="h-12"
-                />
+            <div className="mt-5">
+              <label htmlFor="dept" className="p-1 text-sm font-semibold">
+                학과
+              </label>
+              <Controller
+                name="selectedDept"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    {...field}
+                    options={options}
+                    placeholder="학과를 검색하세요."
+                    isClearable
+                    className="h-12"
+                  />
+                )}
+              />
+              {errors.selectedDept && (
+                <p className="text-red-500">
+                  {errors.selectedDept.message?.toString()}
+                </p>
               )}
-            />
-            {errors.selectedDept?.message && (
-              <p className="text-red-500">
-                {errors.selectedDept?.message?.toString()}
-              </p>
-            )}
+            </div>
 
             <div className="w-full flex flex-col items-center mt-8">
               <button
