@@ -6,7 +6,7 @@ import { FaceFrownIcon } from "@heroicons/react/24/outline";
 import { HeartIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as SolidHeartIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
-
+import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 export default function DetailProduct() {
   const { id } = useParams<{ id: string }>();
   const [isWished, setIsWished] = useState(false); // 초기 찜 상태를 false로 설정
@@ -160,7 +160,7 @@ export default function DetailProduct() {
           <ChevronLeftIcon className="size-10" />
         </div>
         <div className="p-5">
-          <FaceFrownIcon className="size-10" />
+          <EllipsisVerticalIcon className="size-10" />
         </div>
       </header>
       <div className="flex p-5 gap-3 items-center">

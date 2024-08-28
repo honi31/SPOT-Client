@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-
+import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import ReportModal from "../Modal/Report";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -172,24 +172,10 @@ export default function ProductList() {
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-bold">{post.title}</h3>
                   <div
-                    className="size-5 mr-4"
+                    className="size-5 mr-4 z-2"
                     onClick={() => setIsModalOpen(true)}
                   >
-                    <svg
-                      data-slot="icon"
-                      fill="none"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                      aria-hidden="true"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
-                      ></path>
-                    </svg>
+                    <EllipsisVerticalIcon className="h-6 w-6 text-gray-500" />
                   </div>
                 </div>
                 <span className="text-sm text-gray-500">{post.createdAt}</span>
