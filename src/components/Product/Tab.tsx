@@ -1,32 +1,45 @@
-import { useState } from "react";
+import React from "react";
+import { Tabs, Tab } from "@mui/material";
 
 interface TabProps {
   selectedTab: string;
   setSelectedTab: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export default function Tab({ selectedTab, setSelectedTab }: TabProps) {
-  const handleTabClick = (tab: string) => {
-    setSelectedTab(tab);
+export default function TabComponent({
+  selectedTab,
+  setSelectedTab,
+}: TabProps) {
+  const handleTabChange = (event: React.SyntheticEvent, newValue: string) => {
+    setSelectedTab(newValue);
   };
+
   return (
-    <div className="flex justify-center mt-2">
-      <button
-        className={`flex-1 text-center py-2 ${
-          selectedTab === "팝니다" ? "text-emerald-500" : "text-gray-500"
-        } font-semibold`}
-        onClick={() => handleTabClick("팝니다")}
-      >
-        팝니다
-      </button>
-      <button
-        className={`flex-1 text-center py-2 ${
-          selectedTab === "삽니다" ? "text-emerald-500" : "text-gray-500"
-        } font-semibold`}
-        onClick={() => handleTabClick("삽니다")}
-      >
-        삽니다
-      </button>
-    </div>
+    <Tabs
+      value={selectedTab}
+      onChange={handleTabChange}
+      TabIndicatorProps={{
+        style: {
+          backgroundColor: "#059669",
+        },
+      }}
+    >
+      <Tab
+        label="팔래요"
+        value="팔래요"
+        sx={{
+          color: selectedTab === "팔래요" ? "#059669 !important" : "gray",
+          fontSize: "1.1rem",
+        }}
+      />
+      <Tab
+        label="살래요"
+        value="살래요"
+        sx={{
+          color: selectedTab === "살래요" ? "#059669 !important" : "gray",
+          fontSize: "1.1rem",
+        }}
+      />
+    </Tabs>
   );
 }

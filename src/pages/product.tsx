@@ -7,15 +7,16 @@ import Tab from "../components/Product/Tab";
 import { useState } from "react";
 
 export default function Product() {
-  const [selectedTab, setSelectedTab] = useState("팝니다");
+  const [selectedTab, setSelectedTab] = useState("팔래요");
   return (
-    <div>
+    <div className="flex flex-col">
       <div className="sticky top-0 z-40">
         <Header />
         <Category />
+      </div>
+      <div className="justify-start">
         <Tab selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
       </div>
-
       <ProductList selectedTab={selectedTab} />
       <Link
         to="/write"
