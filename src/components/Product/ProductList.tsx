@@ -15,9 +15,13 @@ interface Post {
   createdAt: string;
   representativePhoto: string;
   category: string;
+  type: string;
+}
+interface ProductListProps {
+  selectedTab: string;
 }
 
-export default function ProductList() {
+export default function ProductList({ selectedTab }: ProductListProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const filterPosts = {
@@ -33,6 +37,7 @@ export default function ProductList() {
         createdAt: "1분 전",
         representativePhoto: "/img/csbook.jpeg",
         category: "book",
+        type: "팝니다",
       },
       {
         id: 2,
@@ -45,6 +50,7 @@ export default function ProductList() {
         createdAt: "10분 전",
         representativePhoto: "/img/benz.png",
         category: "electric",
+        type: "팝니다",
       },
       {
         id: 3,
@@ -57,6 +63,7 @@ export default function ProductList() {
         createdAt: "10분 전",
         representativePhoto: "/img/dubai.jpg",
         category: "production",
+        type: "팝니다",
       },
       {
         id: 4,
@@ -69,6 +76,7 @@ export default function ProductList() {
         createdAt: "30분 전",
         representativePhoto: "/img/yogurt.jpeg",
         category: "etc",
+        type: "팝니다",
       },
       {
         id: 5,
@@ -81,6 +89,7 @@ export default function ProductList() {
         createdAt: "30분 전",
         representativePhoto: "/favicon.ico",
         category: "electric",
+        type: "팝니다",
       },
       {
         id: 6,
@@ -93,6 +102,7 @@ export default function ProductList() {
         createdAt: "30분 전",
         representativePhoto: "/favicon.ico",
         category: "book",
+        type: "삽니다",
       },
       {
         id: 7,
@@ -105,6 +115,7 @@ export default function ProductList() {
         createdAt: "50분 전",
         representativePhoto: "/favicon.ico",
         category: "etc",
+        type: "삽니다",
       },
       {
         id: 8,
@@ -117,6 +128,7 @@ export default function ProductList() {
         createdAt: "1시간 전",
         representativePhoto: "/favicon.ico",
         category: "share",
+        type: "삽니다",
       },
     ],
   };
@@ -137,47 +149,24 @@ export default function ProductList() {
   //     });
   // }, []);
 
-  //
-  // const filteredPosts = posts.filter((post) => !post.isDeleted);
-
   const [posts, setPosts] = useState(filterPosts.post);
   const location = useLocation();
   const navigate = useNavigate();
-
-  // useEffect(() => {
-  //   const searchParams = new URLSearchParams(location.search);
-  //   const searchTerm = searchParams.get("keyword");
-  //   const category = searchParams.get("category");
-
-  //   if (searchTerm) {
-  //     const filtered = filterPosts.post.filter(
-  //       (post) =>
-  //         post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //         post.content.toLowerCase().includes(searchTerm.toLowerCase())
-  //     );
-  //     setPosts(filtered);
-  //   } else {
-  //     setPosts(filterPosts.post); // 검색어가 없을 때 전체 목록을 보여줌
-  //   }
-  //   let filtered = filterPosts.post;
-
-  //   if (category && category !== "all") {
-  //     filtered = filtered.filter((post) => post.category === category);
-  //   }
-  // }, [location.search]);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const category = searchParams.get("category") || "all";
 
-    let filtered = filterPosts.post;
+    let filtered = filterPosts.post.filter(
+      (post) => post.type === selectedTab // 선택된 탭에 따른 필터링
+    );
 
     if (category !== "all") {
       filtered = filtered.filter((post) => post.category === category);
     }
 
     setPosts(filtered);
-  }, [location.search]);
+  }, [location.search, selectedTab]);
 
   return (
     <>
