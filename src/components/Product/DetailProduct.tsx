@@ -7,6 +7,7 @@ import { HeartIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as SolidHeartIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+
 export default function DetailProduct() {
   const { id } = useParams<{ id: string }>();
   const [isWished, setIsWished] = useState(false); // 초기 찜 상태를 false로 설정
@@ -22,6 +23,7 @@ export default function DetailProduct() {
         likes: 2,
         saleStatus: "판매중",
         createdAt: "1분 전",
+        category: "book",
         representativePhoto: "/img/csbook.jpeg",
       },
       {
@@ -33,6 +35,7 @@ export default function DetailProduct() {
         likes: 2,
         saleStatus: "판매중",
         createdAt: "10분 전",
+        category: "book",
         representativePhoto: "/img/benz.png",
       },
       {
@@ -44,6 +47,7 @@ export default function DetailProduct() {
         likes: 12,
         saleStatus: "판매 완료",
         createdAt: "10분 전",
+        category: "book",
         representativePhoto: "/img/dubai.jpg",
       },
       {
@@ -55,6 +59,7 @@ export default function DetailProduct() {
         likes: 7,
         saleStatus: "예약중",
         createdAt: "30분 전",
+        category: "book",
         representativePhoto: "/img/yogurt.jpeg",
       },
       {
@@ -66,6 +71,7 @@ export default function DetailProduct() {
         likes: 7,
         saleStatus: "판매중",
         createdAt: "30분 전",
+        category: "book",
         representativePhoto: "/favicon.ico",
       },
       {
@@ -77,6 +83,7 @@ export default function DetailProduct() {
         likes: 7,
         saleStatus: "판매 완료",
         createdAt: "30분 전",
+        category: "book",
         representativePhoto: "/favicon.ico",
       },
       {
@@ -88,6 +95,7 @@ export default function DetailProduct() {
         likes: 0,
         saleStatus: "판매중",
         createdAt: "50분 전",
+        category: "book",
         representativePhoto: "/favicon.ico",
       },
       {
@@ -99,6 +107,7 @@ export default function DetailProduct() {
         likes: 0,
         saleStatus: "판매중",
         createdAt: "1시간 전",
+        category: "book",
         representativePhoto: "/favicon.ico",
       },
     ],
@@ -155,66 +164,78 @@ export default function DetailProduct() {
     //   </div>
     // </div>
     <div>
-      <header className="w-full border-b flex justify-between">
+      <header className="w-full border-b flex justify-between items-center">
         <div className="p-5">
           <ChevronLeftIcon className="size-10" />
         </div>
+        <div className="p-5 text-2xl font-bold">{post.category}</div>
         <div className="p-5">
           <EllipsisVerticalIcon className="size-10" />
         </div>
       </header>
-      <div className="flex p-5 gap-3 items-center">
-        <div className="size-12 rounded-full items-center">
-          <UserIcon className="border rounded-full p-2" />
-        </div>
-        <div className="items-center justify-center">
-          <h3 className="text-lg font-semibold">{post.sellerNickname}님</h3>
-          <p className="text-gray-600">{post.createdAt}</p>
-        </div>
-      </div>
-      <div className="px-5 py-3">
-        <h1 className="text-2xl font-semibold">{post.title}</h1>
-      </div>
-      <div className="px-5">
-        <p className="text-lg">{post.content}</p>
-      </div>
-      <div className="p-5">
+      <div className="relative aspect-square w-full items-center justify-center">
         <img
           src={post.representativePhoto}
           alt={post.title}
-          className="size-50"
+          className="object-cover size-full"
         />
       </div>
-
-      <div className="flex justify-end p-5">
-        <div className="flex flex-col items-center">
-          <div onClick={handleWishToggle}>
-            {isWished ? (
-              <SolidHeartIcon className="size-10 text-red-500" />
-            ) : (
-              <HeartIcon className="size-10 text-gray-500" />
-            )}
-          </div>
-          <span className="items-center text-center">{likes}</span>
+      <div className="p-5 flex items-center gap-3 border-b">
+        <div className="size-9 rounded-full">
+          <UserIcon />
+        </div>
+        <div className="flex gap-1 items-center">
+          <h3 className="text-lg">{post.sellerNickname}님</h3>
+          <p className="text-lg">🌱</p>
+        </div>
+        <div className="flex-grow"></div>
+        <div>
+          <span className="text-lg">매너학점: 4.5</span>
         </div>
       </div>
 
-      <div className="fixed w-full bottom-0 left-0 p-4 px-5 border-t bg-white flex justify-between items-center">
+      <div className="p-5 pb-0">
+        <div>
+          <h1 className="text-2xl font-semibold">{post.title}</h1>
+          <p>{post.createdAt}</p>
+        </div>
+      </div>
+      <div className="px-5 flex justify-end">
         {post.saleStatus === "판매 완료" ? (
-          <span className="text-xl font-bold text-black p-1 py-2">
+          <span className="text-2xl font-bold text-black p-1 py-2 ml-auto">
             {post.saleStatus}
           </span>
         ) : (
-          <span className="font-semibold text-xl">
+          <span className="font-semibold text-2xl ml-auto">
             {formatToWon(post.price)}원
           </span>
         )}
+      </div>
+      <div className="px-5 py-4">
+        <p className="text-lg">{post.content}</p>
+      </div>
 
+      <div className="fixed w-full bottom-0 left-0 border-t py-2 px-4 bg-white flex justify-between items-center gap-3">
+        <div className="flex justify-end border-gray-300 border-2 rounded-md px-1">
+          <div className="flex flex-col items-center justify-center">
+            <div onClick={handleWishToggle}>
+              {isWished ? (
+                <SolidHeartIcon className="size-10 text-red-500" />
+              ) : (
+                <HeartIcon className="size-10 text-gray-500" />
+              )}
+            </div>
+            <span className="items-center text-center">{likes}</span>
+          </div>
+        </div>
         <Link
-          className="bg-emerald-500 p-3 rounded-full text-white font-semibold"
           to="/chat"
+          className="w-full h-full flex items-center justify-center font-semibold bg-emerald-500 text-white text-center rounded-md hover:bg-emerald-600 focus:animate-pulse p-2 text-xl"
         >
-          <ChatBubbleOvalLeftEllipsisIcon className="size-9" />
+          <div className="flex justify-center items-center gap-1">
+            채팅하기
+            <ChatBubbleOvalLeftEllipsisIcon className="size-8 items-center" />
+          </div>
         </Link>
       </div>
     </div>
