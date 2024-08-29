@@ -158,9 +158,7 @@ export default function ProductList({ selectedTab }: ProductListProps) {
     const category = searchParams.get("category") || "all";
     const keyword = searchParams.get("keyword") || "";
 
-    let filtered = filterPosts.post.filter(
-      (post) => post.type === selectedTab // 선택된 탭에 따른 필터링
-    );
+    let filtered = filterPosts.post.filter((post) => post.type === selectedTab);
 
     if (category !== "all") {
       filtered = filtered.filter((post) => post.category === category);
