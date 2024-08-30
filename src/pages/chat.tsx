@@ -31,7 +31,7 @@ export default function Chat() {
             className="bg-transparent rounded-full w-full h-11 focus:outline-none px-5 ring-2 focus:ring-4 transition ring-neutral-200 focus:ring-neutral-50 border-none placeholder:text-neutral-400"
             type="text"
             name="message"
-            placeholder="Write a message..."
+            placeholder="채팅을 입력해주세요"
           />
           <button className="absolute right-0">
             <ArrowUpCircleIcon className="size-11 text-emerald-500 transition-colors hover:text-emerald-300" />

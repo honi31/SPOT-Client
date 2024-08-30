@@ -110,7 +110,7 @@ export default function ProductCard() {
   return (
     <div className="border m-4 border-gray-300 rounded-lg shadow-md sticky top-0 z-40">
       <div className="flex p-3 items-center gap-4">
-        <div className="size-16 border border-black">이미지</div>
+        <div className="size-16 border border-black"></div>
         <div className="flex flex-col *:text-lg">
           <span>요아정 팔아요</span>
           <span className="font-semibold">23000원</span>
