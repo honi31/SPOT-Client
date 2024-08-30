@@ -7,6 +7,7 @@ import { HeartIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as SolidHeartIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
+import MannerScoreBar from "../User/MannerScoreBar";
 
 export default function DetailProduct() {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +26,7 @@ export default function DetailProduct() {
         createdAt: "1분 전",
         category: "book",
         representativePhoto: "/img/csbook.jpeg",
+        mannerScore: 3.5,
       },
       {
         id: 2,
@@ -35,8 +37,9 @@ export default function DetailProduct() {
         likes: 2,
         saleStatus: "판매중",
         createdAt: "10분 전",
-        category: "book",
+        category: "electric",
         representativePhoto: "/img/benz.png",
+        mannerScore: 2.5,
       },
       {
         id: 3,
@@ -47,8 +50,9 @@ export default function DetailProduct() {
         likes: 12,
         saleStatus: "판매 완료",
         createdAt: "10분 전",
-        category: "book",
+        category: "production",
         representativePhoto: "/img/dubai.jpg",
+        mannerScore: 3.5,
       },
       {
         id: 4,
@@ -59,8 +63,9 @@ export default function DetailProduct() {
         likes: 7,
         saleStatus: "예약중",
         createdAt: "30분 전",
-        category: "book",
+        category: "etc",
         representativePhoto: "/img/yogurt.jpeg",
+        mannerScore: 2.5,
       },
       {
         id: 5,
@@ -71,8 +76,9 @@ export default function DetailProduct() {
         likes: 7,
         saleStatus: "판매중",
         createdAt: "30분 전",
-        category: "book",
+        category: "electric",
         representativePhoto: "/favicon.ico",
+        mannerScore: 3.5,
       },
       {
         id: 6,
@@ -85,6 +91,7 @@ export default function DetailProduct() {
         createdAt: "30분 전",
         category: "book",
         representativePhoto: "/favicon.ico",
+        mannerScore: 1.5,
       },
       {
         id: 7,
@@ -97,6 +104,7 @@ export default function DetailProduct() {
         createdAt: "50분 전",
         category: "book",
         representativePhoto: "/favicon.ico",
+        mannerScore: 2.5,
       },
       {
         id: 8,
@@ -107,11 +115,13 @@ export default function DetailProduct() {
         likes: 0,
         saleStatus: "판매중",
         createdAt: "1시간 전",
-        category: "book",
+        category: "share",
         representativePhoto: "/favicon.ico",
+        mannerScore: 3.5,
       },
     ],
   };
+
   const post = filterPosts.post.find((p) => p.id === Number(id));
   if (!post) {
     return <div>Product not found</div>;
@@ -125,6 +135,14 @@ export default function DetailProduct() {
     setIsWished(!isWished); // 찜 상태를 토글
     setLikes(isWished ? likes - 1 : likes + 1); // 찜 수를 업데이트
   };
+  const categoryMapping: { [key: string]: string } = {
+    book: "교재",
+    electric: "전자기기",
+    etc: "기타",
+    production: "생필품",
+    share: "나눔",
+  };
+  const translatedCategory = categoryMapping[post.category] || post.category;
 
   return (
     // 당근 버전
@@ -168,7 +186,7 @@ export default function DetailProduct() {
         <div className="p-5">
           <ChevronLeftIcon className="size-10" />
         </div>
-        <div className="p-5 text-2xl font-bold">{post.category}</div>
+        <div className="p-5 text-2xl font-bold">{translatedCategory}</div>
         <div className="p-5">
           <EllipsisVerticalIcon className="size-10" />
         </div>
@@ -189,8 +207,11 @@ export default function DetailProduct() {
           <p className="text-lg">🌱</p>
         </div>
         <div className="flex-grow"></div>
-        <div>
-          <span className="text-lg">매너학점: 4.5</span>
+        <div className="flex flex-col text-right">
+          <MannerScoreBar score={post.mannerScore} />
+          <span className="text-lg text-emerald-800 font-semibold">
+            {post.mannerScore}
+          </span>
         </div>
       </div>
 
@@ -216,16 +237,15 @@ export default function DetailProduct() {
       </div>
 
       <div className="fixed w-full bottom-0 left-0 border-t py-2 px-4 bg-white flex justify-between items-center gap-3">
-        <div className="flex justify-end border-gray-300 border-2 rounded-md px-1">
+        <div className="flex justify-end border-gray-300 border-2 rounded-md p-2">
           <div className="flex flex-col items-center justify-center">
             <div onClick={handleWishToggle}>
               {isWished ? (
-                <SolidHeartIcon className="size-10 text-red-500" />
+                <SolidHeartIcon className="size-8 text-red-500" />
               ) : (
-                <HeartIcon className="size-10 text-gray-500" />
+                <HeartIcon className="size-8 text-gray-500" />
               )}
             </div>
-            <span className="items-center text-center">{likes}</span>
           </div>
         </div>
         <Link
