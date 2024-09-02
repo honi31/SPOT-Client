@@ -1,10 +1,14 @@
+import { Link } from "react-router-dom";
+
 export default function PageList() {
   return (
     <div className="*:m-4 *:gap-2 *:mb-8 min-h-screen">
       <div className="flex flex-col *:text-xl *:p-1">
         <h2 className="font-semibold mb-2">내 계정</h2>
         <span>이메일</span>
-        <span>비밀번호 변경</span>
+        <Link to="/changepassword">
+          <span>비밀번호 변경</span>
+        </Link>
       </div>
       <div className="flex flex-col *:text-xl *:p-1">
         <h2 className=" font-semibold mb-2">나의 거래</h2>

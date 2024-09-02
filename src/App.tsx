@@ -11,6 +11,7 @@ import DetailProduct from "./components/Product/DetailProduct";
 import Chat from "./pages/chat";
 import Search from "./pages/search";
 import MyPage from "./pages/mypage";
+import ChangePassword from "./pages/changepassword";
 function App() {
   return (
     <Router>
@@ -26,6 +27,7 @@ function App() {
         <Route path="/chat" element={<Chat />}></Route>
         <Route path="/search" element={<Search />}></Route>
         <Route path="/mypage" element={<MyPage />}></Route>
+        <Route path="/changepassword" element={<ChangePassword />}></Route>
       </Routes>
     </Router>
   );
