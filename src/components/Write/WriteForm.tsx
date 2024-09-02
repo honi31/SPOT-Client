@@ -38,17 +38,28 @@ export default function WriteForm() {
       setValue("price", formattedValue + " 원");
     }
   };
-  const [preview, setPreview] = useState("");
+  const [previews, setPreviews] = useState<string[]>([]);
+
   const onImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const {
       target: { files },
     } = event;
-    if (!files) {
-      return;
+
+    if (files) {
+      const fileArray = Array.from(files);
+
+      if (fileArray.length + previews.length > 5) {
+        alert("최대 5장까지 업로드할 수 있습니다.");
+        return;
+      }
+
+      const newPreviews = fileArray.map((file) => URL.createObjectURL(file));
+      setPreviews((prevPreviews) => [...prevPreviews, ...newPreviews]);
     }
-    const file = files[0];
-    const url = URL.createObjectURL(file);
-    setPreview(url);
+  };
+
+  const removeImage = (index: number) => {
+    setPreviews((prevPreviews) => prevPreviews.filter((_, i) => i !== index));
   };
 
   const category = [
@@ -70,32 +81,50 @@ export default function WriteForm() {
         placeholder="상품의 카테고리를 정해주세요"
         isClearable
         isSearchable={true}
-        className="mb-8"
+        className="mb-4"
       ></Select>
       <form className="flex flex-col gap-1">
-        <label
-          htmlFor="photo"
-          className="border-2 aspect-square flex items-center justify-center flex-col text-neutral-300 border-neutral-300 rounded-md border-dashed cursor-pointer bg-center bg-cover"
-          style={{
-            backgroundImage: `url(${preview})`,
-          }}
-        >
-          {preview === "" ? (
-            <>
-              <PhotoIcon className="w-20" />
-              <div className="text-neutral-400 text-sm">
-                상품 사진을 추가해주세요.
-                {/* {state?.fieldErrors.photo} */}
-              </div>
-            </>
-          ) : null}
+        <label htmlFor="photo" className="p-1 text-sm font-semibold pt-5">
+          상품 사진
         </label>
+        <div className="flex gap-2 flex-wrap">
+          {previews.map((preview, index) => (
+            <div
+              key={index}
+              className="relative border-2 aspect-square w-24 h-24 flex items-center justify-center flex-col text-neutral-300 border-neutral-300 rounded-md bg-center bg-cover"
+              style={{
+                backgroundImage: `url(${preview})`,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => removeImage(index)}
+                className="absolute top-0 right-0 bg-red-500 text-white rounded-full px-1"
+              >
+                &times;
+              </button>
+            </div>
+          ))}
+          {previews.length < 5 && (
+            <label
+              htmlFor="photo-upload"
+              className="border-2 aspect-square w-24 h-24 flex items-center justify-center flex-col text-neutral-300 border-neutral-300 rounded-md border-dashed cursor-pointer bg-center bg-cover"
+            >
+              <PhotoIcon className="w-10" />
+              <div className="text-neutral-400 text-center text-sm">
+                <p>상품사진</p>
+                <p>업로드 {previews.length}/5</p>
+              </div>
+            </label>
+          )}
+        </div>
         <input
           onChange={onImageChange}
           type="file"
-          id="photo"
+          id="photo-upload"
           name="photo"
           accept="image/*"
+          multiple
           className="hidden"
         />
 
