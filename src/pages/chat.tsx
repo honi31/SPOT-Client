@@ -1,42 +1,52 @@
-import { ArrowUpCircleIcon } from "@heroicons/react/24/solid";
-
-import { useRef, useState } from "react";
+import ChatMessagesList from "../components/Chat/ChatMessageList";
 import ProductCard from "../components/Chat/ProductCard";
+interface User {
+  id: number;
+  username: string;
+  avatar: string;
+}
 
+interface Message {
+  id: number;
+  userId: number;
+  user: User;
+  payload: string;
+  created_at: Date;
+}
 export default function Chat() {
-  const [message, setMessage] = useState("");
-  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const {
-      target: { value },
-    } = event;
-    setMessage(value);
-  };
-  const onSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    alert(message);
-    setMessage("");
-  };
+  const dummyMessages: Message[] = [
+    {
+      id: 1,
+      userId: 1,
+      user: {
+        id: 1,
+        username: "호니",
+        avatar: "https://via.placeholder.com/50",
+      },
+      payload: "요아정 내놔",
+      created_at: new Date(new Date().getTime() - 60000),
+    },
+    {
+      id: 2,
+      userId: 2,
+      user: {
+        id: 2,
+        username: "흠",
+        avatar: "https://via.placeholder.com/50",
+      },
+      payload: "싫은데",
+      created_at: new Date(new Date().getTime() - 120000),
+    },
+  ];
 
   return (
-    <div className="h-screen flex flex-col justify-between">
-      <div className="flex-grow">
+    <div className="h-screen flex flex-col">
+      <div className="flex-shrink-0 sticky top-0 z-10">
         <ProductCard />
       </div>
-      <div className="p-5">
-        <form className="flex relative" onSubmit={onSubmit}>
-          <input
-            required
-            onChange={onChange}
-            value={message}
-            className="bg-transparent rounded-full w-full h-11 focus:outline-none px-5 ring-2 focus:ring-4 transition ring-neutral-200 focus:ring-neutral-50 border-none placeholder:text-neutral-400"
-            type="text"
-            name="message"
-            placeholder="채팅을 입력해주세요"
-          />
-          <button className="absolute right-0">
-            <ArrowUpCircleIcon className="size-11 text-emerald-500 transition-colors hover:text-emerald-300" />
-          </button>
-        </form>
+
+      <div className="flex-grow overflow-y-auto">
+        <ChatMessagesList initialMessages={dummyMessages} userId={1} />
       </div>
     </div>
   );
