@@ -10,6 +10,7 @@ import Write from "./pages/write";
 import DetailProduct from "./components/Product/DetailProduct";
 import Chat from "./pages/chat";
 import Search from "./pages/search";
+import MyPage from "./pages/mypage";
 function App() {
   return (
     <Router>
@@ -24,6 +25,7 @@ function App() {
         <Route path="/product/:id" element={<DetailProduct />}></Route>
         <Route path="/chat" element={<Chat />}></Route>
         <Route path="/search" element={<Search />}></Route>
+        <Route path="/mypage" element={<MyPage />}></Route>
       </Routes>
     </Router>
   );
