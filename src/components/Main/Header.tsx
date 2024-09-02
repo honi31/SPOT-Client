@@ -1,5 +1,5 @@
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { UserIcon } from "@heroicons/react/24/outline";
+
 import { useNavigate } from "react-router-dom";
 export default function Header() {
   const navigate = useNavigate();
@@ -12,13 +12,11 @@ export default function Header() {
       <div className="items-center p-4 text-2xl font-bold text-white font-serif">
         SPOT
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center mr-4">
         <MagnifyingGlassIcon
           className="w-8 h-16 text-white"
           onClick={navigateToSearch}
         />
-
-        <UserIcon className="mr-4 w-8 h-16 text-white" />
       </div>
     </div>
   );
