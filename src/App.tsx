@@ -12,6 +12,7 @@ import Chat from "./pages/chat";
 import Search from "./pages/search";
 import MyPage from "./pages/mypage";
 import ChangePassword from "./pages/changepassword";
+import ChatList from "./pages/chatlist";
 function App() {
   return (
     <Router>
@@ -28,6 +29,7 @@ function App() {
         <Route path="/search" element={<Search />}></Route>
         <Route path="/mypage" element={<MyPage />}></Route>
         <Route path="/changepassword" element={<ChangePassword />}></Route>
+        <Route path="/chatlist" element={<ChatList />}></Route>
       </Routes>
     </Router>
   );
