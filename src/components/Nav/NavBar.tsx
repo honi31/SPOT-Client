@@ -9,7 +9,7 @@ export default function NavBar() {
       <Link to="/main">
         <HomeIcon className="size-8 text-gray-500" />
       </Link>
-      <Link to="/chat">
+      <Link to="/chatlist">
         <ChatBubbleOvalLeftIcon className="size-8 text-gray-500" />
       </Link>
       <Link to="/like">
