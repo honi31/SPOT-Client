@@ -4,7 +4,7 @@ export default function MainContent() {
   const skeletonArray = Array(20).fill(0);
   return (
     <>
-      <div className="flex flex-col justify-between gap-6 p-5 w-full">
+      <div className="flex flex-col justify-between p-5 w-full min-h-screen mb-16">
         <div className="flex flex-col gap-3">
           <h4 className="text-[22px] font-bold">전체 인기순 👍</h4>
           <div className="flex overflow-x-auto gap-4">
