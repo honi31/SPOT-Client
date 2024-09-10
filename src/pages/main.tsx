@@ -10,11 +10,13 @@ export default function Main() {
         <Header />
         <Category />
       </div>
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-grow overflow-y-auto">
         <MainContent />
       </div>
 
-      <NavBar />
+      <div className="sticky bottom-0">
+        <NavBar />
+      </div>
     </div>
   );
 }
