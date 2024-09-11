@@ -11,11 +11,11 @@ export default function Login() {
     try {
       const response = await login(username, password);
 
-      // 헤더에서 토큰 추출
-      const token = response.headers["Authorization"];
-      if (token) {
-        localStorage.setItem("token", token); // 토큰 저장
-        console.log("Token saved successfully");
+      let accessToken = response.headers["access"];
+
+      if (accessToken) {
+        localStorage.setItem("accessToken", accessToken); // 토큰 저장
+        console.log("Token saved successfully:", accessToken);
         navigate("/main");
       } else {
         alert("로그인에 실패했습니다. 다시 시도해주세요.");

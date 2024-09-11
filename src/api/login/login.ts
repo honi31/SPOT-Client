@@ -1,5 +1,5 @@
 import axios from "axios";
-
+axios.defaults.withCredentials = true;
 export async function login(username: string, password: string) {
   try {
     const response = await axios.post(
