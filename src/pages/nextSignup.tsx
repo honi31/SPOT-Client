@@ -6,6 +6,12 @@ import { useState, useEffect } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { signup } from "../api/signup/register";
+import { sendCode, verifyEmailCode } from "../api/signup/email";
+
+interface EmailFormInputs {
+  email: string;
+}
 
 export default function NextSignup() {
   const emailSchema = z.object({
@@ -18,8 +24,9 @@ export default function NextSignup() {
   const {
     register: registerEmail,
     handleSubmit: handleEmailSubmit,
+    getValues,
     formState: { errors: emailErrors },
-  } = useForm({
+  } = useForm<EmailFormInputs>({
     resolver: zodResolver(emailSchema),
   });
 
@@ -39,24 +46,50 @@ export default function NextSignup() {
     { value: "화학과", label: "화학과" },
   ];
   const placeholder = "학과를 검색하세요.";
+
+  const [emailDomain, setEmailDomain] = useState("@gmail.com");
+  const [verifyCode, setVerifyCode] = useState("");
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [searchParams] = useSearchParams(); // 쿼리 파라미터 사용
+
+  const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setVerifyCode(e.target.value);
+  };
+
+  const handleSendCode = async (data: EmailFormInputs) => {
+    const fullEmail = `${data.email}${emailDomain}`;
+    try {
+      await sendCode(fullEmail);
+      setIsCodeSent(true);
+      console.log(fullEmail);
+    } catch (error) {
+      console.log("인증번호 전송 중 오류", error);
+      console.log(fullEmail);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    const email = getValues("email"); // Retrieve email from form values
+    const fullEmail = `${email}${emailDomain}`;
+    try {
+      await verifyEmailCode(fullEmail, verifyCode);
+      setIsVerified(true);
+    } catch (error) {
+      console.log("인증번호 검증 오류", error);
+    }
+  };
+
+  const handleSignup = async () => {};
 
   useEffect(() => {
     const school = searchParams.get("school");
 
     if (school === "한국외국어대학교") {
-      setValue("emailDomain", "@hufs.ac.kr");
+      setEmailDomain("@hufs.ac.kr");
+      setValue("emailDomain", "@hufs.ac.kr"); // 이메일 도메인 설정
     }
   }, [searchParams, setValue]);
-
-  const handleSendCode = () => {
-    setIsCodeSent(true); // 인증번호 전송 상태 업데이트
-  };
-  const handleVerifyCode = () => {
-    setIsVerified(true);
-  };
 
   return (
     <div className="flex flex-col py-8 px-5">
@@ -72,12 +105,13 @@ export default function NextSignup() {
                 type="text"
                 id="email"
                 placeholder="이메일 아이디"
-                className="w-1/2 border border-gray-300 h-11 p-2 rounded-l-lg mb-2"
                 {...registerEmail("email")}
+                className="w-1/2 border border-gray-300 h-11 p-2 rounded-l-lg mb-2"
               />
               <input
                 type="text"
                 id="emailDomain"
+                value={emailDomain}
                 className="w-1/2 border border-gray-300 h-11 p-2 rounded-r-lg bg-gray-100"
                 disabled
                 {...register("emailDomain")}
@@ -103,8 +137,9 @@ export default function NextSignup() {
                   type="text"
                   id="verificationCode"
                   placeholder="인증번호 입력"
+                  value={verifyCode}
+                  onChange={handleCodeChange}
                   className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-5"
-                  {...register("verificationCode")}
                 />
               </div>
 
