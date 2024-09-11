@@ -113,7 +113,7 @@ export default function NextSignup() {
         entranceYear
       );
       alert("회원가입 성공!");
-      navigate("/main");
+      navigate("/login");
     } catch (error) {
       console.log("회원가입 중 오류 발생: ", error);
       alert("회원가입 중 오류가 발생했습니다.");
