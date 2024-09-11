@@ -1,11 +1,24 @@
 import Select from "react-select";
-import useSignupForm from "../components/Signup/useSignupForm"; // Import the custom hook
+import useSignupForm from "../components/Signup/useSignupForm";
 import { Controller } from "react-hook-form";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { signup } from "../api/signup/register";
+import { sendCode, verifyEmailCode } from "../api/signup/email";
+
+interface EmailFormInputs {
+  email: string;
+}
+
+interface SignupFormInputs {
+  nickname: string;
+  password: string;
+  confirmPassword: string;
+  selectedDept: { value: string; label: string } | null;
+}
 
 export default function NextSignup() {
   const emailSchema = z.object({
@@ -18,12 +31,19 @@ export default function NextSignup() {
   const {
     register: registerEmail,
     handleSubmit: handleEmailSubmit,
+    getValues,
     formState: { errors: emailErrors },
-  } = useForm({
+  } = useForm<EmailFormInputs>({
     resolver: zodResolver(emailSchema),
   });
 
-  const { register, handleSubmit, control, setValue, errors } = useSignupForm();
+  const {
+    register,
+    handleSubmit: handleSignupSubmit,
+    control,
+    setValue,
+    formState: { errors },
+  } = useForm<SignupFormInputs>();
 
   const options = [
     { value: "컴퓨터공학과", label: "컴퓨터공학과" },
@@ -38,25 +58,74 @@ export default function NextSignup() {
     { value: "생명공학과", label: "생명공학과" },
     { value: "화학과", label: "화학과" },
   ];
+
   const placeholder = "학과를 검색하세요.";
+  const navigate = useNavigate();
+
+  const [emailDomain, setEmailDomain] = useState("@gmail.com");
+  const [verifyCode, setVerifyCode] = useState("");
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-  const [searchParams] = useSearchParams(); // 쿼리 파라미터 사용
+  const [searchParams] = useSearchParams();
+
+  const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setVerifyCode(e.target.value);
+  };
+
+  const handleSendCode = async (data: EmailFormInputs) => {
+    const fullEmail = `${data.email}${emailDomain}`;
+    try {
+      await sendCode(fullEmail);
+      setIsCodeSent(true);
+    } catch (error) {
+      console.log("인증번호 전송 중 오류", error);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    const email = getValues("email");
+    const fullEmail = `${email}${emailDomain}`;
+    try {
+      await verifyEmailCode(fullEmail, verifyCode);
+      setIsVerified(true);
+    } catch (error) {
+      console.log("인증번호 검증 오류", error);
+    }
+  };
+
+  const handleSignup = async (data: SignupFormInputs) => {
+    const email = getValues("email");
+    const fullEmail = `${email}${emailDomain}`;
+    const university = searchParams.get("school") || "Unknown University";
+    const entranceYear = searchParams.get("year") || "Unknown Year";
+    if (data.password !== data.confirmPassword) {
+      alert("비밀번호가 일치하지 않습니다.");
+      return;
+    }
+
+    try {
+      await signup(
+        fullEmail,
+        data.password,
+        data.nickname,
+        university,
+        data.selectedDept?.value || "",
+        entranceYear
+      );
+      alert("회원가입 성공!");
+      navigate("/main");
+    } catch (error) {
+      console.log("회원가입 중 오류 발생: ", error);
+      alert("회원가입 중 오류가 발생했습니다.");
+    }
+  };
 
   useEffect(() => {
     const school = searchParams.get("school");
-
     if (school === "한국외국어대학교") {
-      setValue("emailDomain", "@hufs.ac.kr");
+      setEmailDomain("@hufs.ac.kr");
     }
   }, [searchParams, setValue]);
-
-  const handleSendCode = () => {
-    setIsCodeSent(true); // 인증번호 전송 상태 업데이트
-  };
-  const handleVerifyCode = () => {
-    setIsVerified(true);
-  };
 
   return (
     <div className="flex flex-col py-8 px-5">
@@ -72,15 +141,15 @@ export default function NextSignup() {
                 type="text"
                 id="email"
                 placeholder="이메일 아이디"
-                className="w-1/2 border border-gray-300 h-11 p-2 rounded-l-lg mb-2"
                 {...registerEmail("email")}
+                className="w-1/2 border border-gray-300 h-11 p-2 rounded-l-lg mb-2"
               />
               <input
                 type="text"
                 id="emailDomain"
+                value={emailDomain}
                 className="w-1/2 border border-gray-300 h-11 p-2 rounded-r-lg bg-gray-100"
                 disabled
-                {...register("emailDomain")}
               />
               <button
                 type="submit"
@@ -103,15 +172,16 @@ export default function NextSignup() {
                   type="text"
                   id="verificationCode"
                   placeholder="인증번호 입력"
+                  value={verifyCode}
+                  onChange={handleCodeChange}
                   className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-5"
-                  {...register("verificationCode")}
                 />
               </div>
 
               <button
                 type="button"
                 className="w-full bg-emerald-500 text-white text-center rounded-md hover:bg-emerald-600 focus:animate-pulse py-2 text-xl mt-8"
-                onClick={handleVerifyCode} // 인증 완료 버튼 클릭 시 handleVerifyCode 호출
+                onClick={handleVerifyCode}
               >
                 확인
               </button>
@@ -119,9 +189,8 @@ export default function NextSignup() {
           )}
         </div>
       ) : (
-        // 회원 정보 입력 폼 부분
         <div className="flex flex-col mt-12">
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSignupSubmit(handleSignup)}>
             <label htmlFor="nickname" className="p-1 text-sm font-semibold">
               닉네임
             </label>
@@ -132,9 +201,9 @@ export default function NextSignup() {
               className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-1"
               {...register("nickname")}
             />
-            {errors.nickname?.message && (
+            {errors.nickname && (
               <p className="text-red-500 mb-0">
-                {errors.nickname?.message?.toString()}
+                {errors.nickname.message?.toString()}
               </p>
             )}
             <div className="mt-5 mb-1">
@@ -148,10 +217,8 @@ export default function NextSignup() {
                 className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-1"
                 {...register("password")}
               />
-              {errors.password?.message && (
-                <p className="text-red-500">
-                  {errors.password?.message?.toString()}
-                </p>
+              {errors.password && (
+                <p className="text-red-500">{errors.password.message}</p>
               )}
             </div>
             <input
@@ -161,9 +228,9 @@ export default function NextSignup() {
               className="w-full border border-gray-300 h-11 rounded-lg p-2 mb-1"
               {...register("confirmPassword")}
             />
-            {errors.confirmPassword?.message && (
+            {errors.confirmPassword && (
               <p className="text-red-500 mb-0">
-                {errors.confirmPassword?.message?.toString()}
+                {errors.confirmPassword.message?.toString()}
               </p>
             )}
             <div className="mt-5">
@@ -177,16 +244,14 @@ export default function NextSignup() {
                   <Select
                     {...field}
                     options={options}
-                    placeholder="학과를 검색하세요."
+                    placeholder={placeholder}
                     isClearable
                     className="h-12"
                   />
                 )}
               />
               {errors.selectedDept && (
-                <p className="text-red-500">
-                  {errors.selectedDept.message?.toString()}
-                </p>
+                <p className="text-red-500">{errors.selectedDept.message}</p>
               )}
             </div>
 
