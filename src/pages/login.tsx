@@ -1,18 +1,23 @@
 import { Link, useNavigate } from "react-router-dom";
-import { login } from "../api/login/login";
+import { login, reIssueToken } from "../api/login/login";
 import { useState } from "react";
-
+import axios from "axios";
+import { useCookies } from "react-cookie";
+axios.defaults.withCredentials = true;
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+
+  const [cookies, setCookie, removeCookie] = useCookies(["refresh"]);
 
   async function handleLogin() {
     try {
       const response = await login(username, password);
 
       let accessToken = response.headers["access"];
-
+      let refreshToken = cookies.refresh;
+      console.log("refreshToken", refreshToken);
       if (accessToken) {
         localStorage.setItem("accessToken", accessToken); // 토큰 저장
         console.log("Token saved successfully:", accessToken);
@@ -23,6 +28,31 @@ export default function Login() {
     } catch (error) {
       console.error("login failed", error);
       alert("아이디나 비밀번호를 다시 확인해주세요!");
+    }
+  }
+
+  async function refreshAccessToken() {
+    try {
+      const refreshToken = cookies.refresh;
+      console.log("Refresh token from cookie:", refreshToken);
+
+      if (!refreshToken) {
+        console.log("No refresh token found");
+        return;
+      }
+
+      const response = await reIssueToken();
+
+      const newAccessToken = response.headers["access"];
+
+      if (newAccessToken) {
+        localStorage.setItem("accessToken", newAccessToken);
+        console.log("Access token refreshed:", newAccessToken);
+      } else {
+        console.log("Failed to refresh token");
+      }
+    } catch (error) {
+      console.error("Failed to refresh token", error);
     }
   }
   return (
