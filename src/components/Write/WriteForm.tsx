@@ -2,6 +2,7 @@ import { useState } from "react";
 import useWriteForm from "./useWriteForm";
 import { PhotoIcon } from "@heroicons/react/24/solid";
 import Select from "react-select";
+import { createPost } from "../../api/write/createPost";
 
 export default function WriteForm() {
   const { register, handleSubmit, control, setValue, errors, watch } =
@@ -62,6 +63,21 @@ export default function WriteForm() {
     setPreviews((prevPreviews) => prevPreviews.filter((_, i) => i !== index));
   };
 
+  const handleCreatePost = async () => {
+    try {
+      await createPost(
+        1,
+        "title",
+        "content",
+        "PURCHASE",
+        "TRADE_COMPLETE",
+        20000
+      );
+      console.log("게시글이 성공적으로 등록되었습니다.");
+    } catch (error) {
+      console.error("게시글 등록 실패:", error);
+    }
+  };
   const category = [
     { value: "의류", label: "의류" },
     { value: "교재", label: "교재" },
@@ -220,7 +236,7 @@ export default function WriteForm() {
         <button
           type="button"
           className="text-lg font-semibold border bg-emerald-500 text-white rounded-lg h-11 px-4 mt-4"
-          // onClick={handlePost}
+          onClick={handleCreatePost}
         >
           작성하기
         </button>
