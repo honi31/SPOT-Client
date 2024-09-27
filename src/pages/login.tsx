@@ -103,10 +103,7 @@ export default function Login() {
       </div>
       <div className="flex gap-2 text-sm text-gray-600">
         <span>비밀번호를 잊어버리셨나요?</span>
-        <Link
-          to="/searchPassword"
-          className="hover:underline underline-offset-4"
-        >
+        <Link to="/findPassword" className="hover:underline underline-offset-4">
           비밀번호 찾기
         </Link>
       </div>
