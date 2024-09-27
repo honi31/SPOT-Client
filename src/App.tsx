@@ -14,6 +14,7 @@ import MyPage from "./pages/mypage";
 import ChangePassword from "./pages/changepassword";
 import ChatList from "./pages/chatlist";
 import { AuthProvider } from "./context/AuthContext";
+import FindPassword from "./pages/findPassword";
 function App() {
   return (
     <Router>
@@ -32,6 +33,7 @@ function App() {
           <Route path="/mypage" element={<MyPage />}></Route>
           <Route path="/changepassword" element={<ChangePassword />}></Route>
           <Route path="/chatlist" element={<ChatList />}></Route>
+          <Route path="/findPassword" element={<FindPassword />}></Route>
         </Routes>
       </AuthProvider>
     </Router>
