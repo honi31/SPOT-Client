@@ -1,13 +1,10 @@
-import Select from "react-select";
 import useSignupForm from "../components/Signup/useSignupForm";
-import { Controller } from "react-hook-form";
-import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { signup } from "../api/signup/register";
-import { sendCode, verifyEmailCode } from "../api/signup/email";
+import { authEmail } from "../api/password/findPassword";
+import { verifyEmailCode } from "../api/signup/email";
 interface EmailFormInputs {
   email: string;
 }
@@ -32,7 +29,7 @@ export default function FindPassword() {
   const [verifyCode, setVerifyCode] = useState("");
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(true);
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setVerifyCode(e.target.value);
@@ -40,10 +37,11 @@ export default function FindPassword() {
 
   const handleSendCode = async (data: EmailFormInputs) => {
     const fullEmail = `${data.email}`;
-    setIsSubmitting(true);
+    setIsSubmitting(false);
     try {
-      await sendCode(fullEmail);
+      await authEmail(fullEmail);
       setIsCodeSent(true);
+      setIsSubmitting(true);
     } catch (error) {
       console.log("인증번호 전송 중 오류", error);
     }
@@ -84,9 +82,9 @@ export default function FindPassword() {
                 <button
                   type="submit"
                   className="ml-2 text-xs border-2 border-emerald-500 text-black rounded-lg h-11 px-4"
-                  disabled={isSubmitting}
+                  disabled={!isSubmitting}
                 >
-                  {isSubmitting ? "전송 중..." : "인증번호 전송"}
+                  {isSubmitting ? "인증번호 전송" : "전송 중 ... "}
                 </button>
               </div>
               {emailErrors.email && (
