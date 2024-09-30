@@ -3,6 +3,7 @@ import useWriteForm from "./useWriteForm";
 import { PhotoIcon } from "@heroicons/react/24/solid";
 import Select from "react-select";
 import { createPost } from "../../api/write/createPost";
+import axios from "axios"; // axios for API calls
 
 export default function WriteForm() {
   const { register, handleSubmit, control, setValue, errors, watch } =
@@ -39,12 +40,12 @@ export default function WriteForm() {
       setValue("price", formattedValue + " 원");
     }
   };
-  const [previews, setPreviews] = useState<string[]>([]);
 
-  const onImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const {
-      target: { files },
-    } = event;
+  const [previews, setPreviews] = useState<string[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]); // Presigned URL 저장할 배열
+
+  const onImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { files } = event.target;
 
     if (files) {
       const fileArray = Array.from(files);
@@ -56,28 +57,64 @@ export default function WriteForm() {
 
       const newPreviews = fileArray.map((file) => URL.createObjectURL(file));
       setPreviews((prevPreviews) => [...prevPreviews, ...newPreviews]);
+
+      // Presigned URL을 받아와서 이미지 업로드
+      for (const file of fileArray) {
+        try {
+          // Presigned URL 요청
+          const response = await axios.get(`/aws/file/${file.name}`);
+          const presignedUrl = response.data;
+          console.log(presignedUrl);
+          // Presigned URL로 이미지 업로드
+          await axios.put(presignedUrl, file, {
+            headers: {
+              "Content-Type": file.type,
+            },
+          });
+
+          // 업로드 완료 후 presigned URL의 이미지 링크를 저장
+          const imageUrl = presignedUrl.split("?")[0]; // URL에서 ?를 제외한 순수 URL만 저장
+          setImageUrls((prevUrls) => [...prevUrls, imageUrl]);
+        } catch (error) {
+          console.error("이미지 업로드 실패:", error);
+        }
+      }
     }
   };
 
   const removeImage = (index: number) => {
     setPreviews((prevPreviews) => prevPreviews.filter((_, i) => i !== index));
+    setImageUrls((prevUrls) => prevUrls.filter((_, i) => i !== index)); // 이미지 URL 배열에서도 제거
   };
 
   const handleCreatePost = async () => {
+    // 제목, 내용, 가격 등 폼에서 입력된 값 가져오기
+    const title = watch("title");
+    const content = watch("description");
+    const price = watch("price").replace(/[^0-9]/g, ""); // 숫자 형식으로 변경
+
+    // 거래 방식에 따른 postFor 설정
+    const postFor = selectedTrade === "sell" ? "SALE" : "PURCHASE";
+
+    // 가격이 입력되지 않았거나 잘못된 경우 처리
+    if (!title || !content || (selectedTrade === "sell" && !price)) {
+      alert("제목, 내용, 가격을 모두 입력해주세요.");
+      return;
+    }
+
     try {
-      await createPost(
-        1,
-        "title",
-        "content",
-        "PURCHASE",
-        "TRADE_COMPLETE",
-        20000
-      );
+      // 게시글 등록 API 호출
+      await createPost(4, title, content, postFor, "TRADING", Number(price)); // imageUrls 추가
       console.log("게시글이 성공적으로 등록되었습니다.");
+
+      // 성공 시 알림 표시 또는 페이지 이동 등의 로직 추가
+      alert("게시글이 성공적으로 등록되었습니다.");
     } catch (error) {
       console.error("게시글 등록 실패:", error);
+      alert("게시글 등록에 실패했습니다. 다시 시도해주세요.");
     }
   };
+
   const category = [
     { value: "의류", label: "의류" },
     { value: "교재", label: "교재" },
