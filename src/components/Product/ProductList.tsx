@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import ReportModal from "../Modal/Report";
 import { useLocation, useNavigate } from "react-router-dom";
+import { getPosts } from "../../api/product/post";
 
 interface Post {
   id: number;
@@ -14,8 +14,13 @@ interface Post {
   saleStatus: string;
   createdAt: string;
   representativePhoto: string;
-  category: string;
+  category: number;
+  postStatus: string;
   type: string;
+}
+
+interface Filters {
+  category_id: number;
 }
 interface ProductListProps {
   selectedTab: string;
@@ -24,157 +29,38 @@ interface ProductListProps {
 export default function ProductList({ selectedTab }: ProductListProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const filterPosts = {
-    post: [
-      {
-        id: 1,
-        title: "컴공 교재 팔아요.",
-        sellerNickname: "호니",
-        price: "23,000",
-        content: "공학관 앞에서 직거래 원해요 쿨거",
-        likes: 2,
-        saleStatus: "판매중",
-        createdAt: "1분 전",
-        representativePhoto: "/img/csbook.jpeg",
-        category: "book",
-        type: "팔래요",
-      },
-      {
-        id: 2,
-        title: "벤츠 E클래스",
-        sellerNickname: "깡통이",
-        price: "6,300만",
-        content: "공학관 앞에서 직거래 원해요 쿨거",
-        likes: 2,
-        saleStatus: "판매중",
-        createdAt: "10분 전",
-        representativePhoto: "/img/benz.png",
-        category: "electric",
-        type: "팔래요",
-      },
-      {
-        id: 3,
-        title: "두바이 초콜릿 개당 3500",
-        sellerNickname: "헉",
-        price: "3,500",
-        content: "공학관 앞에서 직거래 원해요 쿨거",
-        likes: 12,
-        saleStatus: "판매 완료",
-        createdAt: "10분 전",
-        representativePhoto: "/img/dubai.jpg",
-        category: "production",
-        type: "팔래요",
-      },
-      {
-        id: 4,
-        title: "요아정 기프티콘 팔래요",
-        sellerNickname: "흠",
-        price: "11,000",
-        content: "공학관 앞에서 직거래 원해요 쿨거",
-        likes: 7,
-        saleStatus: "예약중",
-        createdAt: "30분 전",
-        representativePhoto: "/img/yogurt.jpeg",
-        category: "etc",
-        type: "팔래요",
-      },
-      {
-        id: 5,
-        title: "공학용 계산기 카시오 ES-1276",
-        sellerNickname: "과니",
-        price: "10,000",
-        content: "공학관 앞에서 직거래 원해요 쿨거",
-        likes: 7,
-        saleStatus: "판매중",
-        createdAt: "30분 전",
-        representativePhoto: "/favicon.ico",
-        category: "electric",
-        type: "팔래요",
-      },
-      {
-        id: 6,
-        title: "컴프실 23-2 족보",
-        sellerNickname: "익명",
-        price: "50,000",
-        content: "공학관 앞에서 직거래 원해요 쿨거",
-        likes: 7,
-        saleStatus: "판매 완료",
-        createdAt: "30분 전",
-        representativePhoto: "/favicon.ico",
-        category: "book",
-        type: "살래요",
-      },
-      {
-        id: 7,
-        title: "정유진 교수님 이산수학 교재",
-        sellerNickname: "현현준준",
-        price: "20,000",
-        content: "공학관 앞에서 직거래 원해요 쿨거",
-        likes: 0,
-        saleStatus: "판매중",
-        createdAt: "50분 전",
-        representativePhoto: "/favicon.ico",
-        category: "etc",
-        type: "살래요",
-      },
-      {
-        id: 8,
-        title: "얼른 데려가세요~",
-        sellerNickname: "미누리",
-        price: "5,000",
-        content: "공학관 앞에서 직거래 원해요 쿨거",
-        likes: 0,
-        saleStatus: "판매중",
-        createdAt: "1시간 전",
-        representativePhoto: "/favicon.ico",
-        category: "share",
-        type: "살래요",
-      },
-    ],
-  };
-
-  const handleProductClick = (id: number) => {
-    navigate(`/product/${id}`);
-  };
-  // useEffect(() => {
-  //
-  //   axios
-  //     .get("api/posts")
-  //     .then((response) => {
-  //
-  //       setPosts(response.data);
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching posts:", error);
-  //     });
-  // }, []);
-
-  const [posts, setPosts] = useState(filterPosts.post);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [filters, setFilters] = useState<Filters>({
+    category_id: 1,
+  });
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await getPosts(filters);
+        setPosts(response.content); // 서버로부터 받은 데이터를 상태에 저장
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+      }
+    };
+
+    fetchPosts();
+  }, [filters]);
+
+  useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const category = searchParams.get("category") || "all";
-    const keyword = searchParams.get("keyword") || "";
+    const categoryParam = searchParams.get("category_id");
+    const category_id = categoryParam ? parseInt(categoryParam, 10) : 1;
 
-    let filtered = filterPosts.post.filter((post) => post.type === selectedTab);
-
-    if (category !== "all") {
-      filtered = filtered.filter((post) => post.category === category);
-    }
-    if (keyword) {
-      const lowerKeyword = keyword.toLowerCase();
-      filtered = filtered.filter(
-        (post) =>
-          post.title.toLowerCase().includes(lowerKeyword) ||
-          post.content.toLowerCase().includes(lowerKeyword)
-      );
-    }
-
-    setPosts(filtered);
-  }, [location.search, selectedTab]);
-
+    setFilters({
+      category_id, // 카테고리 필터만 설정
+    });
+  }, [location.search]);
+  const handleProductClick = (id: number) => {
+    navigate(`/product/${id}`);
+  };
   return (
     <>
       <div className="mt-4 w-full max-w-screen-sm mx-auto relative">
