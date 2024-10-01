@@ -70,6 +70,7 @@ export default function WriteForm() {
             headers: {
               "Content-Type": file.type,
             },
+            withCredentials: false,
           });
 
           // 업로드 완료 후 presigned URL의 이미지 링크를 저장
