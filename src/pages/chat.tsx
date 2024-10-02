@@ -1,5 +1,6 @@
 import ChatMessagesList from "../components/Chat/ChatMessageList";
 import ProductCard from "../components/Chat/ProductCard";
+import { useAuth } from "../context/AuthContext";
 interface User {
   id: number;
   username: string;
@@ -14,6 +15,7 @@ interface Message {
   created_at: Date;
 }
 export default function Chat() {
+  const { isLoggedIn, logout } = useAuth();
   const dummyMessages: Message[] = [
     {
       id: 1,
@@ -40,14 +42,20 @@ export default function Chat() {
   ];
 
   return (
-    <div className="h-screen flex flex-col">
-      <div className="flex-shrink-0 sticky top-0 z-10">
-        <ProductCard />
-      </div>
+    <>
+      {isLoggedIn ? (
+        <div className="h-screen flex flex-col">
+          <div className="flex-shrink-0 sticky top-0 z-10">
+            <ProductCard />
+          </div>
 
-      <div className="flex-grow overflow-y-auto">
-        <ChatMessagesList initialMessages={dummyMessages} userId={1} />
-      </div>
-    </div>
+          <div className="flex-grow overflow-y-auto">
+            <ChatMessagesList initialMessages={dummyMessages} userId={1} />
+          </div>
+        </div>
+      ) : (
+        <div>로그인이 필요한 서비스입니다.</div>
+      )}
+    </>
   );
 }
