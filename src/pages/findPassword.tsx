@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { authEmail } from "../api/password/findPassword";
+import { authEmail, authCode } from "../api/password/findPassword";
 import { verifyEmailCode } from "../api/signup/email";
 interface EmailFormInputs {
   email: string;
@@ -51,7 +51,7 @@ export default function FindPassword() {
     const email = getValues("email");
     const fullEmail = `${email}`;
     try {
-      await verifyEmailCode(fullEmail, verifyCode);
+      await authCode(fullEmail, verifyCode);
       setIsVerified(true);
     } catch (error) {
       console.log("인증번호 검증 오류", error);
