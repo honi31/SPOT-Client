@@ -1,21 +1,46 @@
-import useSignupForm from "../components/Signup/useSignupForm";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { authEmail, authCode } from "../api/password/findPassword";
-import { verifyEmailCode } from "../api/signup/email";
+import {
+  authEmail,
+  authCode,
+  changePassword,
+} from "../api/password/findPassword";
+import { useNavigate } from "react-router-dom";
+
 interface EmailFormInputs {
   email: string;
 }
+
+interface PasswordFormInputs {
+  password: string;
+  confirmPassword: string;
+}
+
 export default function FindPassword() {
-  const { register, handleSubmit, control, setValue, errors } = useSignupForm();
+  const navigate = useNavigate();
+
   const emailSchema = z.object({
     email: z
       .string()
       .nonempty("이메일을 입력해주세요!")
       .email("올바른 이메일 형식이 아닙니다!"),
   });
+
+  // 비밀번호 유효성 검사 스키마
+  const passwordSchema = z
+    .object({
+      password: z
+        .string()
+        .nonempty("새 비밀번호를 입력해주세요!")
+        .min(6, "비밀번호는 최소 6자 이상이어야 합니다!"),
+      confirmPassword: z.string().nonempty("비밀번호 확인을 입력해주세요!"),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "비밀번호가 일치하지 않습니다.",
+      path: ["confirmPassword"], // 오류를 확인할 위치
+    });
 
   const {
     register: registerEmail,
@@ -24,6 +49,15 @@ export default function FindPassword() {
     formState: { errors: emailErrors },
   } = useForm<EmailFormInputs>({
     resolver: zodResolver(emailSchema),
+  });
+
+  const {
+    register: registerPassword,
+    handleSubmit: handlePasswordSubmit,
+    watch,
+    formState: { errors: passwordErrors },
+  } = useForm<PasswordFormInputs>({
+    resolver: zodResolver(passwordSchema),
   });
 
   const [verifyCode, setVerifyCode] = useState("");
@@ -55,6 +89,17 @@ export default function FindPassword() {
       setIsVerified(true);
     } catch (error) {
       console.log("인증번호 검증 오류", error);
+    }
+  };
+
+  const handleChangePassword = async (data: PasswordFormInputs) => {
+    const email = getValues("email");
+    const newPassword = data.password;
+    try {
+      await changePassword(email, newPassword);
+      navigate("/login");
+    } catch (error) {
+      console.log("비밀번호 찾기 후 변경 중 오류", error);
     }
   };
 
@@ -122,35 +167,43 @@ export default function FindPassword() {
         <>
           <h2 className="text-2xl font-bold">비밀번호 변경</h2>
           <div className="flex flex-col">
-            <div className="mt-5 mb-1">
-              <label htmlFor="password" className="p-1 text-sm font-semibold">
-                새 비밀번호
-              </label>
+            <form onSubmit={handlePasswordSubmit(handleChangePassword)}>
+              <div className="mt-5 mb-1">
+                <label htmlFor="password" className="p-1 text-sm font-semibold">
+                  새 비밀번호
+                </label>
+                <input
+                  type="password"
+                  id="newPassword"
+                  placeholder="새 비밀번호"
+                  className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-1"
+                  {...registerPassword("password")}
+                />
+                {passwordErrors.password && (
+                  <p className="text-red-500">
+                    {passwordErrors.password?.message?.toString()}
+                  </p>
+                )}
+              </div>
               <input
                 type="password"
-                id="password"
-                placeholder="새 비밀번호"
-                className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-1"
-                {...register("password")}
+                id="confirmPassword"
+                placeholder="새 비밀번호 확인"
+                className="w-full border border-gray-300 h-11 rounded-lg p-2 mb-1"
+                {...registerPassword("confirmPassword")}
               />
-              {errors.password?.message && (
+              {passwordErrors.confirmPassword && (
                 <p className="text-red-500">
-                  {errors.password?.message?.toString()}
+                  {passwordErrors.confirmPassword?.message?.toString()}
                 </p>
               )}
-            </div>
-            <input
-              type="password"
-              id="confirmPassword"
-              placeholder="새 비밀번호 확인"
-              className="w-full border border-gray-300 h-11 rounded-lg p-2 mb-1"
-              {...register("confirmPassword")}
-            />
-            {errors.confirmPassword?.message && (
-              <p className="text-red-500 mb-0">
-                {errors.confirmPassword?.message?.toString()}
-              </p>
-            )}
+              <button
+                type="submit"
+                className="w-full bg-emerald-500 text-white text-center rounded-md hover:bg-emerald-600 focus:animate-pulse py-2 text-xl mt-8"
+              >
+                비밀번호 변경
+              </button>
+            </form>
           </div>
         </>
       )}
