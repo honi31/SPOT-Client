@@ -29,3 +29,21 @@ export async function getPosts(filters: Filters) {
     throw error;
   }
 }
+
+export async function getDetailProduct(postId: number) {
+  const accessToken = localStorage.getItem("accessToken");
+
+  try {
+    const response = await axios.get(`/api/post/${postId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`, // 토큰을 Authorization 헤더에 추가
+        "Content-Type": "application/json", // Content-Type 설정
+      },
+    });
+
+    return response;
+  } catch (error) {
+    console.log("상세 게시글 정보 반환 api 에러", error);
+    throw error;
+  }
+}

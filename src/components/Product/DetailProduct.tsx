@@ -5,131 +5,35 @@ import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 import { FaceFrownIcon } from "@heroicons/react/24/outline";
 import { HeartIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as SolidHeartIcon } from "@heroicons/react/24/solid";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import MannerScoreBar from "../User/MannerScoreBar";
+import { getDetailProduct } from "../../api/product/post";
 
 export default function DetailProduct() {
   const { id } = useParams<{ id: string }>();
+  const [post, setPost] = useState<any>(null);
   const [isWished, setIsWished] = useState(false); // 초기 찜 상태를 false로 설정
   const [likes, setLikes] = useState(0); // 초기 찜 수를 0으로 설정
-  const filterPosts = {
-    post: [
-      {
-        id: 1,
-        title: "컴공 교재 팔아요.",
-        sellerNickname: "호니",
-        price: "23,000",
-        content: "공학관 앞에서 직거래 원해요 쿨거래" + "\n" + "새상품입니다",
-        likes: 2,
-        saleStatus: "판매중",
-        createdAt: "1분 전",
-        category: "book",
-        representativePhoto: "/img/csbook.jpeg",
-        mannerScore: 3.5,
-      },
-      {
-        id: 2,
-        title: "벤츠 E클래스",
-        sellerNickname: "깡통이",
-        price: "6,300만",
-        content: "공학관 앞에서 직거래 원해요 쿨거",
-        likes: 2,
-        saleStatus: "판매중",
-        createdAt: "10분 전",
-        category: "electric",
-        representativePhoto: "/img/benz.png",
-        mannerScore: 2.5,
-      },
-      {
-        id: 3,
-        title: "두바이 초콜릿 개당 3500",
-        sellerNickname: "헉",
-        price: "3,500",
-        content: "공학관 앞에서 직거래 원해요 쿨거",
-        likes: 12,
-        saleStatus: "판매 완료",
-        createdAt: "10분 전",
-        category: "production",
-        representativePhoto: "/img/dubai.jpg",
-        mannerScore: 3.5,
-      },
-      {
-        id: 4,
-        title: "요아정 기프티콘 팝니다",
-        sellerNickname: "흠",
-        price: "11,000",
-        content: "공학관 앞에서 직거래 원해요 쿨거래" + "\n" + "새상품입니다",
-        likes: 7,
-        saleStatus: "예약중",
-        createdAt: "30분 전",
-        category: "etc",
-        representativePhoto: "/img/yogurt.jpeg",
-        mannerScore: 2.5,
-      },
-      {
-        id: 5,
-        title: "공학용 계산기 카시오 ES-1276",
-        sellerNickname: "과니",
-        price: "10,000",
-        content: "공학관 앞에서 직거래 원해요 쿨거",
-        likes: 7,
-        saleStatus: "판매중",
-        createdAt: "30분 전",
-        category: "electric",
-        representativePhoto: "/favicon.ico",
-        mannerScore: 3.5,
-      },
-      {
-        id: 6,
-        title: "컴프실 23-2 족보",
-        sellerNickname: "익명",
-        price: "50,000",
-        content: "공학관 앞에서 직거래 원해요 쿨거",
-        likes: 7,
-        saleStatus: "판매 완료",
-        createdAt: "30분 전",
-        category: "book",
-        representativePhoto: "/favicon.ico",
-        mannerScore: 1.5,
-      },
-      {
-        id: 7,
-        title: "정유진 교수님 이산수학 교재",
-        sellerNickname: "현현준준",
-        price: "20,000",
-        content: "공학관 앞에서 직거래 원해요 쿨거",
-        likes: 0,
-        saleStatus: "판매중",
-        createdAt: "50분 전",
-        category: "book",
-        representativePhoto: "/favicon.ico",
-        mannerScore: 2.5,
-      },
-      {
-        id: 8,
-        title: "얼른 데려가세요~",
-        sellerNickname: "미누리",
-        price: "5,000",
-        content: "공학관 앞에서 직거래 원해요 쿨거",
-        likes: 0,
-        saleStatus: "판매중",
-        createdAt: "1시간 전",
-        category: "share",
-        representativePhoto: "/favicon.ico",
-        mannerScore: 3.5,
-      },
-    ],
+
+  const handleDetailProduct = async () => {
+    try {
+      const response = await getDetailProduct(Number(id));
+      setPost(response.data);
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const post = filterPosts.post.find((p) => p.id === Number(id));
-  if (!post) {
-    return <div>Product not found</div>;
-  }
-  const formatToWon = (price: string) => {
-    return price.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  // 컴포넌트가 마운트될 때 handleDetailProduct 호출
+  useEffect(() => {
+    handleDetailProduct();
+  }, [id]); // id가 변경될 때마다 다시 호출
+
+  const formatToWon = (price: number) => {
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
-  const isOwner = true;
 
   const handleWishToggle = () => {
     setIsWished(!isWished); // 찜 상태를 토글
@@ -142,7 +46,12 @@ export default function DetailProduct() {
     production: "생필품",
     share: "나눔",
   };
-  const translatedCategory = categoryMapping[post.category] || post.category;
+  // const translatedCategory = categoryMapping[category] || post.category;
+
+  if (!post) {
+    // 데이터를 아직 받아오지 않았을 때
+    return <div>Loading...</div>;
+  }
 
   return (
     // 당근 버전
@@ -164,7 +73,7 @@ export default function DetailProduct() {
     //   </div>
     //   <div className="p-5">
     //     <h1 className="text-2xl font-semibold">{post.title}</h1>
-    //     <p>{post.createdAt}</p>
+    //     <p>{post.post_date}</p>
     //   </div>
     //   <div className="px-5 py-4">
     //     <p className="text-lg">{post.content}</p>
@@ -186,14 +95,14 @@ export default function DetailProduct() {
         <div className="p-5">
           <ChevronLeftIcon className="size-10" />
         </div>
-        <div className="p-5 text-2xl font-bold">{translatedCategory}</div>
+        {/* <div className="p-5 text-2xl font-bold">{translatedCategory}</div> */}
         <div className="p-5">
           <EllipsisVerticalIcon className="size-10" />
         </div>
       </header>
       <div className="relative aspect-square w-full items-center justify-center">
         <img
-          src={post.representativePhoto}
+          src={post.title}
           alt={post.title}
           className="object-cover size-full"
         />
@@ -203,32 +112,30 @@ export default function DetailProduct() {
           <UserIcon />
         </div>
         <div className="flex gap-1 items-center">
-          <h3 className="text-lg">{post.sellerNickname}님</h3>
+          <h3 className="text-lg">{post.userNickname}님</h3>
           <p className="text-lg">🌱</p>
         </div>
         <div className="flex-grow"></div>
         <div className="flex flex-col text-right">
-          <MannerScoreBar score={post.mannerScore} />
-          <span className="text-lg text-emerald-800 font-semibold">
-            {post.mannerScore}
-          </span>
+          <MannerScoreBar score={3} />
+          <span className="text-lg text-emerald-800 font-semibold">{3}</span>
         </div>
       </div>
 
       <div className="p-5 pb-0">
         <div>
           <h1 className="text-2xl font-semibold">{post.title}</h1>
-          <p>{post.createdAt}</p>
+          <p>{post.date}</p>
         </div>
       </div>
       <div className="px-5 flex justify-end">
         {post.saleStatus === "판매 완료" ? (
           <span className="text-2xl font-bold text-black p-1 py-2 ml-auto">
-            {post.saleStatus}
+            {post.postStatus}
           </span>
         ) : (
           <span className="font-semibold text-2xl ml-auto">
-            {formatToWon(post.price)}원
+            {formatToWon(post.price)}
           </span>
         )}
       </div>
