@@ -1,4 +1,5 @@
 import axios from "axios";
+import { apiClient } from "../apiClient";
 
 interface Filters {
   keyword?: string;
@@ -14,10 +15,10 @@ export async function getPosts(filters: Filters) {
   const accessToken = localStorage.getItem("accessToken");
   try {
     const params = new URLSearchParams(filters as any); // 필터를 쿼리 파라미터로 변환
-    const response = await axios.get(`/api/posts/querydsl`, {
+    const response = await apiClient.get(`/api/posts/querydsl`, {
       params,
       headers: {
-        Authorization: `Bearer ${accessToken}`, // 토큰을 Authorization 헤더에 추가
+        // 토큰을 Authorization 헤더에 추가
         "Content-Type": "application/json", // Content-Type 설정
       },
     });
@@ -34,7 +35,7 @@ export async function getDetailProduct(postId: number) {
   const accessToken = localStorage.getItem("accessToken");
 
   try {
-    const response = await axios.get(`/api/post/${postId}`, {
+    const response = await apiClient.get(`/api/post/${postId}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`, // 토큰을 Authorization 헤더에 추가
         "Content-Type": "application/json", // Content-Type 설정
