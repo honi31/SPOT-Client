@@ -58,14 +58,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // 토큰 재발급
   const refreshAccessToken = async () => {
     try {
-      const refreshToken = cookies.refresh;
-      console.log("쿠키에서 가져온 refresh token:", refreshToken);
-
-      if (!refreshToken) {
-        console.log("Refresh token이 없습니다.");
-        return;
-      }
-
       const response = await reIssueToken();
       const newAccessToken = response.headers["access"];
 
