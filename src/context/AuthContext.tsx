@@ -1,7 +1,6 @@
 // AuthContext.tsx
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { login as apiLogin, reIssueToken } from "../api/login/login";
-import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
 
 interface AuthContextType {
@@ -18,7 +17,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [cookies, setCookie, removeCookie] = useCookies(["refresh"]);
   const navigate = useNavigate();
 
   // 로그인 시 토큰 저장 및 상태 업데이트
@@ -26,7 +24,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const response = await apiLogin(username, password);
       const newAccessToken = response.headers["access"];
-      const refreshToken = cookies.refresh;
 
       if (newAccessToken) {
         setAccessToken(newAccessToken);
@@ -47,7 +44,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       setAccessToken(null);
       localStorage.removeItem("accessToken");
-      removeCookie("refresh");
       navigate("/login");
       console.log("로그아웃 성공");
     } catch (error) {
