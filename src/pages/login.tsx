@@ -1,10 +1,9 @@
-import { Link, useNavigate } from "react-router-dom";
-import { login, reIssueToken } from "../api/login/login";
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
-import { useCookies } from "react-cookie";
 import { useAuth } from "../context/AuthContext";
 axios.defaults.withCredentials = true;
+
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -13,54 +12,7 @@ export default function Login() {
   const handleLogin = async () => {
     await login(username, password);
   };
-  const navigate = useNavigate();
 
-  // const [cookies, setCookie, removeCookie] = useCookies(["refresh"]);
-
-  // async function handleLogin() {
-  //   try {
-  //     const response = await login(username, password);
-
-  //     let accessToken = response.headers["access"];
-  //     let refreshToken = cookies.refresh;
-  //     console.log("refreshToken", refreshToken);
-  //     if (accessToken) {
-  //       localStorage.setItem("accessToken", accessToken); // 토큰 저장
-  //       console.log("Token saved successfully:", accessToken);
-  //       navigate("/main");
-  //     } else {
-  //       alert("로그인에 실패했습니다. 다시 시도해주세요.");
-  //     }
-  //   } catch (error) {
-  //     console.error("login failed", error);
-  //     alert("아이디나 비밀번호를 다시 확인해주세요!");
-  //   }
-  // }
-
-  // async function refreshAccessToken() {
-  //   try {
-  //     const refreshToken = cookies.refresh;
-  //     console.log("Refresh token from cookie:", refreshToken);
-
-  //     if (!refreshToken) {
-  //       console.log("No refresh token found");
-  //       return;
-  //     }
-
-  //     const response = await reIssueToken();
-
-  //     const newAccessToken = response.headers["access"];
-
-  //     if (newAccessToken) {
-  //       localStorage.setItem("accessToken", newAccessToken);
-  //       console.log("Access token refreshed:", newAccessToken);
-  //     } else {
-  //       console.log("Failed to refresh token");
-  //     }
-  //   } catch (error) {
-  //     console.error("Failed to refresh token", error);
-  //   }
-  // }
   return (
     <div className="w-full flex flex-col items-center min-h-screen p-6">
       <div className="items-center text-black font-semibold text-2xl">

@@ -156,7 +156,7 @@ export default function DetailProduct() {
           </div>
         </div>
         <Link
-          to="/chat"
+          to={`/chat/${id}`}
           className="w-full h-full flex items-center justify-center font-semibold bg-emerald-500 text-white text-center rounded-md hover:bg-emerald-600 focus:animate-pulse p-2 text-xl"
         >
           <div className="flex justify-center items-center gap-1">

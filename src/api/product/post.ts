@@ -1,4 +1,3 @@
-import axios from "axios";
 import { apiClient } from "../apiClient";
 
 interface Filters {
@@ -12,7 +11,6 @@ interface Filters {
 }
 
 export async function getPosts(filters: Filters) {
-  const accessToken = localStorage.getItem("accessToken");
   try {
     const params = new URLSearchParams(filters as any); // 필터를 쿼리 파라미터로 변환
     const response = await apiClient.get(`/api/posts/querydsl`, {

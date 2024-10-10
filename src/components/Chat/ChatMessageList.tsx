@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ArrowUpCircleIcon } from "@heroicons/react/24/solid";
+import { useAuth } from "../../context/AuthContext";
 
 interface User {
   id: number;
@@ -18,6 +19,7 @@ interface Message {
 interface ChatMessageListProps {
   initialMessages: Message[];
   userId: number;
+  roomId: number;
 }
 
 function formatToTimeAgo(date: string): string {
@@ -31,10 +33,11 @@ function formatToTimeAgo(date: string): string {
 export default function ChatMessagesList({
   initialMessages,
   userId,
+  roomId,
 }: ChatMessageListProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [message, setMessage] = useState("");
-
+  const { clientData } = useAuth();
   function onChange(event: React.ChangeEvent<HTMLInputElement>) {
     setMessage(event.target.value);
   }
@@ -53,7 +56,9 @@ export default function ChatMessagesList({
         payload: message,
         created_at: new Date(),
       };
+
       setMessages([...messages, newMessage]);
+
       setMessage("");
     }
   }
