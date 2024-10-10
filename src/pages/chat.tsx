@@ -3,6 +3,9 @@ import ChatMessagesList from "../components/Chat/ChatMessageList";
 import ProductCard from "../components/Chat/ProductCard";
 import { useAuth } from "../context/AuthContext";
 import { Stomp } from "@stomp/stompjs";
+import { createChatRoom } from "../api/chat/chat";
+import { useParams } from "react-router-dom";
+
 interface User {
   id: number;
   username: string;
@@ -17,10 +20,9 @@ interface Message {
   created_at: Date;
 }
 export default function Chat() {
-  const roomId = 1;
-  const { isLoggedIn, logout } = useAuth();
-  const stompClient = useRef<any>(null);
-  const [message, setMessage] = useState<string>("");
+  const { id } = useParams<{ id: string }>();
+  const { isLoggedIn, clientData } = useAuth();
+  const [roomId, setRoomId] = useState<number>(0);
   const [messages, setMessages] = useState<Message[]>([]);
   const dummyMessages: Message[] = [
     {
@@ -34,45 +36,25 @@ export default function Chat() {
       payload: "요아정 내놔",
       created_at: new Date(new Date().getTime() - 60000),
     },
-    {
-      id: 2,
-      userId: 2,
-      user: {
-        id: 2,
-        username: "흠",
-        avatar: "https://via.placeholder.com/50",
-      },
-      payload: "싫은데",
-      created_at: new Date(new Date().getTime() - 120000),
-    },
   ];
-
-  // 웹소켓 연결 및 메시지 구독
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:80/ws");
-    stompClient.current = Stomp.over(socket);
+    const fetchRoomId = async () => {
+      try {
+        const response = await createChatRoom(Number(id));
 
-    stompClient.current.connect({}, () => {
-      // 특정 채팅방에 구독
-      stompClient.current.subscribe(
-        `/sub/chatroom/${roomId}`,
-        (message: any) => {
-          const newMessage: Message = JSON.parse(message.body);
-          setMessages((prevMessages) => [...prevMessages, newMessage]); // 새 메시지를 상태에 추가
+        // response가 존재하는지 확인
+        if (response && response.data && response.data.roomId) {
+          setRoomId(response.data.roomId); // 응답에서 roomId 저장
+        } else {
+          console.error("roomId가 응답에 없습니다.");
         }
-      );
-    });
-
-    // // 초기 메시지 로드
-    // fetchMessages();
-
-    // 컴포넌트 언마운트 시 웹소켓 연결 해제
-    return () => {
-      if (stompClient.current) {
-        stompClient.current.disconnect();
+      } catch (error) {
+        console.error("Chat room 생성 실패:", error);
       }
     };
-  }, []);
+
+    fetchRoomId();
+  }, [id]);
 
   return (
     <>
@@ -83,7 +65,11 @@ export default function Chat() {
           </div>
 
           <div className="flex-grow overflow-y-auto">
-            <ChatMessagesList initialMessages={dummyMessages} userId={1} />
+            <ChatMessagesList
+              initialMessages={dummyMessages}
+              userId={1}
+              roomId={roomId}
+            />
           </div>
         </div>
       ) : (
