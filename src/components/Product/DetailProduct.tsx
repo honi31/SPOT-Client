@@ -9,13 +9,17 @@ import { useEffect, useState } from "react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import MannerScoreBar from "../User/MannerScoreBar";
 import { getDetailProduct } from "../../api/product/post";
+import { addWish } from "../../api/like/addWish";
+import { cancelWish } from "../../api/like/cancelWish";
 
 export default function DetailProduct() {
   const { id } = useParams<{ id: string }>();
   const [post, setPost] = useState<any>(null);
   const [isWished, setIsWished] = useState(false); // 초기 찜 상태를 false로 설정
   const [likes, setLikes] = useState(0); // 초기 찜 수를 0으로 설정
-
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [loading, setLoading] = useState(false);
+  // 상품 상세 정보 가져오기
   const handleDetailProduct = async () => {
     try {
       const response = await getDetailProduct(Number(id));
@@ -25,20 +29,33 @@ export default function DetailProduct() {
       console.log(error);
     }
   };
-
   // 컴포넌트가 마운트될 때 handleDetailProduct 호출
   useEffect(() => {
     handleDetailProduct();
   }, [id]); // id가 변경될 때마다 다시 호출
 
+  const handleWishToggle = async () => {
+    if (loading) return; // 중복 클릭 방지
+    setLoading(true);
+
+    try {
+      if (isFavorite) {
+        await cancelWish(Number(id));
+      } else {
+        await addWish(Number(id));
+      }
+      setIsFavorite(!isFavorite); // 찜 상태 업데이트
+    } catch (error) {
+      console.error("찜 상태 업데이트 실패:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatToWon = (price: number) => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
-  const handleWishToggle = () => {
-    setIsWished(!isWished); // 찜 상태를 토글
-    setLikes(isWished ? likes - 1 : likes + 1); // 찜 수를 업데이트
-  };
   const categoryMapping: { [key: string]: string } = {
     book: "교재",
     electric: "전자기기",
@@ -54,42 +71,6 @@ export default function DetailProduct() {
   }
 
   return (
-    // 당근 버전
-    // <div>
-    //   <div className="relative aspect-square w-full items-center justify-center">
-    //     <img
-    //       src={post.representativePhoto}
-    //       alt={post.title}
-    //       className="object-cover size-full"
-    //     />
-    //   </div>
-    //   <div className="p-5 flex items-center gap-3 border-b">
-    //     <div className="size-9 rounded-full">
-    //       <UserIcon />
-    //     </div>
-    //     <div>
-    //       <h3 className="text-lg">{post.sellerNickname}님</h3>
-    //     </div>
-    //   </div>
-    //   <div className="p-5">
-    //     <h1 className="text-2xl font-semibold">{post.title}</h1>
-    //     <p>{post.post_date}</p>
-    //   </div>
-    //   <div className="px-5 py-4">
-    //     <p className="text-lg">{post.content}</p>
-    //   </div>
-    //   <div className="fixed w-full bottom-0 left-0 p-4 px-5 border-t bg-white flex justify-between items-center">
-    //     <span className="font-semibold text-xl">
-    //       {formatToWon(post.price)}원
-    //     </span>
-    //     <Link
-    //       className="bg-emerald-500 p-3 rounded-full text-white font-semibold"
-    //       to=""
-    //     >
-    //       <ChatBubbleOvalLeftEllipsisIcon className="size-9" />
-    //     </Link>
-    //   </div>
-    // </div>
     <div>
       <header className="w-full border-b flex justify-between items-center">
         <div className="p-5">
@@ -147,7 +128,7 @@ export default function DetailProduct() {
         <div className="flex justify-end border-gray-300 border-2 rounded-md p-2">
           <div className="flex flex-col items-center justify-center">
             <div onClick={handleWishToggle}>
-              {isWished ? (
+              {isFavorite ? (
                 <SolidHeartIcon className="size-8 text-red-500" />
               ) : (
                 <HeartIcon className="size-8 text-gray-500" />

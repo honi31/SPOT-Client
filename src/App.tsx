@@ -15,28 +15,35 @@ import ChangePassword from "./pages/changepassword";
 import ChatList from "./pages/chatlist";
 import { AuthProvider } from "./context/AuthContext";
 import FindPassword from "./pages/findPassword";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// QueryClient 생성
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <Routes>
-          <Route path="/" element={<Home />}></Route>
-          <Route path="register" element={<Signup />}></Route>
-          <Route path="register/signup" element={<NextSignup />}></Route>
-          <Route path="/login" element={<Login />}></Route>
-          <Route path="/product" element={<Product />}></Route>
-          <Route path="/main" element={<Main />}></Route>
-          <Route path="/write" element={<Write />}></Route>
-          <Route path="/product/:id" element={<DetailProduct />}></Route>
-          <Route path="/chat/:id" element={<Chat />}></Route>
-          <Route path="/search" element={<Search />}></Route>
-          <Route path="/mypage" element={<MyPage />}></Route>
-          <Route path="/changepassword" element={<ChangePassword />}></Route>
-          <Route path="/chatlist" element={<ChatList />}></Route>
-          <Route path="/findPassword" element={<FindPassword />}></Route>
-        </Routes>
-      </AuthProvider>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Home />}></Route>
+            <Route path="register" element={<Signup />}></Route>
+            <Route path="register/signup" element={<NextSignup />}></Route>
+            <Route path="/login" element={<Login />}></Route>
+            <Route path="/product" element={<Product />}></Route>
+            <Route path="/main" element={<Main />}></Route>
+            <Route path="/write" element={<Write />}></Route>
+            <Route path="/product/:id" element={<DetailProduct />}></Route>
+            <Route path="/chat/:id" element={<Chat />}></Route>
+            <Route path="/search" element={<Search />}></Route>
+            <Route path="/mypage" element={<MyPage />}></Route>
+            <Route path="/changepassword" element={<ChangePassword />}></Route>
+            <Route path="/chatlist" element={<ChatList />}></Route>
+            <Route path="/findPassword" element={<FindPassword />}></Route>
+          </Routes>
+        </AuthProvider>
+      </Router>
+    </QueryClientProvider>
   );
 }
 
