@@ -8,7 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { signup } from "../api/signup/register";
 import { sendCode, verifyEmailCode } from "../api/signup/email";
-
+import { checkNickname } from "../api/signup/nickname";
+import { useDebounce } from "use-debounce";
 interface EmailFormInputs {
   email: string;
 }
@@ -69,6 +70,9 @@ export default function NextSignup() {
   const [timeLeft, setTimeLeft] = useState(180); // 3분(180초) 타이머 초기화
   const timerRef = useRef<NodeJS.Timeout | null>(null); // 타이머 제어용 ref
   const [searchParams] = useSearchParams();
+
+  const [nickname, setNickname] = useState("");
+  const [nicknameFeedback, setNicknameFeedback] = useState<string | null>(null);
 
   const startTimer = () => {
     setTimeLeft(180); // 3분(180초) 초기화
@@ -155,6 +159,32 @@ export default function NextSignup() {
     }`;
   };
 
+  const [debouncedNickname] = useDebounce(nickname, 500);
+
+  useEffect(() => {
+    if (debouncedNickname) {
+      handleCheckNickname(debouncedNickname);
+    }
+  }, [debouncedNickname]);
+
+  const handleCheckNickname = async (nickname: string) => {
+    try {
+      const response = await checkNickname(nickname);
+      if (response && response.status === 200) {
+        setNicknameFeedback("사용 가능한 닉네임입니다.");
+      } else {
+        setNicknameFeedback("이미 사용 중인 닉네임입니다.");
+      }
+    } catch (error) {
+      setNicknameFeedback("닉네임 확인 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNickname(e.target.value);
+    setNicknameFeedback(null);
+  };
+
   return (
     <div className="flex flex-col py-8 px-5">
       <h2 className="text-2xl font-bold">회원 정보</h2>
@@ -237,7 +267,20 @@ export default function NextSignup() {
               placeholder="닉네임"
               className="w-full border border-gray-300 h-11 p-2 rounded-lg mb-1"
               {...register("nickname")}
+              value={nickname}
+              onChange={handleNicknameChange}
             />
+            {nicknameFeedback && (
+              <p
+                className={
+                  nicknameFeedback.includes("사용 가능")
+                    ? "text-green-500"
+                    : "text-red-500"
+                }
+              >
+                {nicknameFeedback}
+              </p>
+            )}
             {errors.nickname && (
               <p className="text-red-500 mb-0">
                 {errors.nickname.message?.toString()}
