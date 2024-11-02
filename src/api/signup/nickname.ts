@@ -1,8 +1,9 @@
+import axios from "axios";
 import { apiClient } from "../apiClient";
 
 export async function checkNickname(nickname: string) {
   try {
-    const response = await apiClient.post(
+    const response = await axios.post(
       "/auth/nicknameCheck",
       { nickname },
       {
