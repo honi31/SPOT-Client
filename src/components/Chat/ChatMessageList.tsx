@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, RefObject } from "react";
 import { ArrowUpCircleIcon } from "@heroicons/react/24/solid";
-import { useAuth } from "../../context/AuthContext";
+import * as StompJs from "@stomp/stompjs";
 
 interface User {
   id: number;
@@ -17,9 +17,10 @@ interface Message {
 }
 
 interface ChatMessageListProps {
-  initialMessages: Message[];
+  messages: Message[];
   userId: number;
   roomId: number;
+  clientRef: RefObject<StompJs.Client | null>; // WebSocket 클라이언트
 }
 
 function formatToTimeAgo(date: string): string {
@@ -31,35 +32,38 @@ function formatToTimeAgo(date: string): string {
 }
 
 export default function ChatMessagesList({
-  initialMessages,
+  messages,
   userId,
   roomId,
+  clientRef,
 }: ChatMessageListProps) {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [message, setMessage] = useState("");
-  const { clientData } = useAuth();
   function onChange(event: React.ChangeEvent<HTMLInputElement>) {
     setMessage(event.target.value);
   }
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
+    // 연결 상태를 확인
+    if (!clientRef.current || !clientRef.current.connected) {
+      console.error("STOMP 연결이 설정되지 않았습니다.");
+      return; // 연결이 없으면 메시지 발송 안 함
+    }
     if (message.trim()) {
-      const newMessage: Message = {
-        id: messages.length + 1,
-        userId: userId,
-        user: {
-          id: userId,
-          username: "You",
-          avatar: "https://via.placeholder.com/50",
-        },
+      const newMessage = {
+        roomId,
+        userId,
         payload: message,
         created_at: new Date(),
       };
 
-      setMessages([...messages, newMessage]);
+      // WebSocket 서버로 메시지 발송
+      clientRef.current.publish({
+        destination: `/pub/room/${roomId}`,
+        body: JSON.stringify(newMessage),
+      });
 
-      setMessage("");
+      setMessage(""); // 입력 초기화
     }
   }
 

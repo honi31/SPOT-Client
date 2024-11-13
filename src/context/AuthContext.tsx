@@ -2,7 +2,6 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { login as apiLogin, reIssueToken } from "../api/login/login";
 import { useNavigate } from "react-router-dom";
-import * as StompJs from "@stomp/stompjs";
 
 interface AuthContextType {
   accessToken: string | null;
@@ -10,7 +9,6 @@ interface AuthContextType {
   logout: () => Promise<void>;
   refreshAccessToken: () => Promise<void>;
   isLoggedIn: boolean;
-  clientData: StompJs.Client | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,17 +17,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [clientData, setClientData] = useState<StompJs.Client | null>(null);
-  const navigate = useNavigate();
 
-  const onConnect = () => {
-    const clientData = new StompJs.Client({
-      brokerURL: "ws://localhost:8080/ws",
-      debug: function (str) {
-        console.log(str);
-      },
-    });
-  };
+  const navigate = useNavigate();
 
   // 로그인 시 토큰 저장 및 상태 업데이트
   const login = async (username: string, password: string) => {
@@ -41,7 +30,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setAccessToken(newAccessToken);
         localStorage.setItem("accessToken", newAccessToken);
         console.log("Login successful, accessToken:", newAccessToken);
-        onConnect();
         navigate("/main");
       } else {
         alert("로그인에 실패했습니다. 다시 시도해주세요.");
@@ -95,7 +83,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     logout,
     refreshAccessToken,
     isLoggedIn: !!accessToken,
-    clientData,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

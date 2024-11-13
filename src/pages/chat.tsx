@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import ChatMessagesList from "../components/Chat/ChatMessageList";
-import ProductCard from "../components/Chat/ProductCard";
+import React, { useState, useEffect, useRef } from "react";
+import { Client } from "@stomp/stompjs";
 import { useAuth } from "../context/AuthContext";
-import { Stomp } from "@stomp/stompjs";
 import { createChatRoom } from "../api/chat/chat";
 import { useParams } from "react-router-dom";
+import ProductCard from "../components/Chat/ProductCard";
+import { ArrowUpCircleIcon } from "@heroicons/react/24/outline";
 
 interface User {
   id: number;
@@ -19,42 +19,79 @@ interface Message {
   payload: string;
   created_at: Date;
 }
+
 export default function Chat() {
   const { id } = useParams<{ id: string }>();
-  const { isLoggedIn, clientData } = useAuth();
-  const [roomId, setRoomId] = useState<number>(0);
+  const { isLoggedIn } = useAuth();
+  const [roomId, setRoomId] = useState<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const dummyMessages: Message[] = [
-    {
-      id: 1,
-      userId: 1,
-      user: {
-        id: 1,
-        username: "호니",
-        avatar: "https://via.placeholder.com/50",
-      },
-      payload: "요아정 내놔",
-      created_at: new Date(new Date().getTime() - 60000),
-    },
-  ];
+  const [message, setMessage] = useState<string>("");
+  const [isConnected, setIsConnected] = useState(false);
+  const client = useRef<Client | null>(null);
+  const accessToken = localStorage.getItem("accessToken");
+
   useEffect(() => {
+    // 채팅방 생성
     const fetchRoomId = async () => {
       try {
         const response = await createChatRoom(Number(id));
-
-        // response가 존재하는지 확인
-        if (response && response.data && response.data.roomId) {
-          setRoomId(response.data.roomId); // 응답에서 roomId 저장
+        if (response?.data?.roomId) {
+          setRoomId(response.data.roomId);
         } else {
           console.error("roomId가 응답에 없습니다.");
         }
       } catch (error) {
-        console.error("Chat room 생성 실패:", error);
+        console.error("채팅방 생성 실패:", error);
       }
     };
 
     fetchRoomId();
-  }, [id]);
+    connect();
+  }, [roomId]);
+
+  const connect = () => {
+    try {
+      // Client 객체 생성 및 설정
+      const client = new Client({
+        brokerURL: "/ws",
+        debug: (str) => {
+          console.log(str); // 디버그 로깅
+        },
+        reconnectDelay: 5000, // 자동 재연결 대기 시간 (밀리초)
+        heartbeatIncoming: 4000, // 서버->클라이언트 핑 (밀리초)
+        heartbeatOutgoing: 4000, // 클라이언트->서버 핑 (밀리초)
+      });
+
+      // 이벤트 핸들러 등록
+      client.onConnect = () => {
+        console.log("WebSocket connected!");
+      };
+
+      client.onStompError = (frame) => {
+        console.error("Broker reported error:", frame.headers["message"]);
+        console.error("Additional details:", frame.body);
+      };
+
+      // 연결 활성화
+      client.activate();
+    } catch (err) {
+      console.log("Connection error:", err);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMessage(e.target.value);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isConnected) {
+      console.error("STOMP 연결이 설정되지 않았습니다.");
+      return;
+    }
+    // publish(message);
+    setMessage(""); // 입력 초기화
+  };
 
   return (
     <>
@@ -64,12 +101,54 @@ export default function Chat() {
             <ProductCard />
           </div>
 
-          <div className="flex-grow overflow-y-auto">
-            <ChatMessagesList
-              initialMessages={dummyMessages}
-              userId={1}
-              roomId={roomId}
-            />
+          <div className="flex-grow overflow-y-auto p-5 flex flex-col gap-5">
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex gap-2 items-start ${
+                  msg.userId === 1 ? "justify-end" : ""
+                }`}
+              >
+                {msg.userId !== 1 && (
+                  <img
+                    src={msg.user.avatar}
+                    alt={msg.user.username}
+                    className="w-8 h-8 rounded-full"
+                  />
+                )}
+                <div
+                  className={`flex flex-col gap-1 ${
+                    msg.userId === 1 ? "items-end" : ""
+                  }`}
+                >
+                  <span
+                    className={`p-2.5 rounded-md ${
+                      msg.userId === 1
+                        ? "bg-gray-500 text-white"
+                        : "bg-emerald-500 text-white"
+                    }`}
+                  >
+                    {msg.payload}
+                  </span>
+                </div>
+              </div>
+            ))}
+
+            <div className="sticky bottom-0 p-2">
+              <form className="flex relative" onSubmit={handleSubmit}>
+                <input
+                  required
+                  onChange={handleChange}
+                  value={message}
+                  className="bg-transparent rounded-full w-full h-10 focus:outline-none p-2 ring-2 focus:ring-4 transition ring-neutral-200 focus:ring-neutral-50 border-none placeholder:text-neutral-400"
+                  type="text"
+                  placeholder="채팅을 입력해주세요..."
+                />
+                <button type="submit" className="absolute right-0">
+                  <ArrowUpCircleIcon className="w-10 h-10 text-emerald-500 transition-colors hover:text-emerald-300" />
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       ) : (
