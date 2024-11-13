@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ArrowUpCircleIcon } from "@heroicons/react/24/solid";
-import { Client, StompHeaders } from "@stomp/stompjs";
+import { Client } from "@stomp/stompjs";
 import { useAuth } from "../context/AuthContext";
 import { createChatRoom } from "../api/chat/chat";
 import { useParams } from "react-router-dom";
 import ProductCard from "../components/Chat/ProductCard";
+import { ArrowUpCircleIcon } from "@heroicons/react/24/outline";
 
 interface User {
   id: number;
@@ -20,24 +20,18 @@ interface Message {
   created_at: Date;
 }
 
-function formatToTimeAgo(date: string): string {
-  const diff = (new Date().getTime() - new Date(date).getTime()) / 1000;
-  if (diff < 60) return "방금";
-  if (diff < 3600) return `${Math.floor(diff / 60)}분 전`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
-  return `${Math.floor(diff / 86400)}일 전`;
-}
-
 export default function Chat() {
   const { id } = useParams<{ id: string }>();
   const { isLoggedIn } = useAuth();
-  const [roomId, setRoomId] = useState<number>(0);
+  const [roomId, setRoomId] = useState<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState<string>("");
-  const client = useRef<Client | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const client = useRef<Client | null>(null);
+  const accessToken = localStorage.getItem("accessToken");
 
   useEffect(() => {
+    // 채팅방 생성
     const fetchRoomId = async () => {
       try {
         const response = await createChatRoom(Number(id));
@@ -52,82 +46,37 @@ export default function Chat() {
     };
 
     fetchRoomId();
-  }, [id]);
-
-  const connect = () => {
-    client.current = new Client({
-      brokerURL: "/ws",
-      connectHeaders: {
-        login: "guest",
-        passcode: "guest",
-      },
-      debug: (str) => console.log(str),
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-
-      onConnect: () => {
-        console.log("웹소켓 연결 성공");
-        setIsConnected(true); // 연결 상태 업데이트
-        subscribe(); // 연결 후에 구독 시작
-      },
-
-      onStompError: (frame) => {
-        console.error("STOMP 오류:", frame);
-        setIsConnected(false);
-      },
-    });
-
-    client.current.activate();
-  };
-
-  const subscribe = () => {
-    if (!client.current || !roomId) return;
-
-    const subscription = client.current.subscribe(
-      `/sub/room/${roomId}`,
-      (message) => {
-        const newMessage: Message = JSON.parse(message.body);
-        console.log("새 메시지 도착:", newMessage);
-        setMessages((prevMessages) => [...prevMessages, newMessage]); // 메시지 추가
-      }
-    );
-
-    console.log(`구독 완료: /sub/room/${roomId}`);
-
-    return () => subscription.unsubscribe(); // 구독 해제 함수 반환
-  };
-
-  useEffect(() => {
-    if (!roomId || isConnected) return; // 이미 연결된 경우 재연결 방지
-
-    connect(); // WebSocket 연결 시작
-
-    return () => {
-      if (client.current) {
-        client.current.deactivate(); // WebSocket 연결 해제
-      }
-    };
+    connect();
   }, [roomId]);
 
-  // disconnect 함수
-  const disconnect = () => {
-    if (client.current) {
-      client.current.deactivate();
+  const connect = () => {
+    try {
+      // Client 객체 생성 및 설정
+      const client = new Client({
+        brokerURL: "/ws",
+        debug: (str) => {
+          console.log(str); // 디버그 로깅
+        },
+        reconnectDelay: 5000, // 자동 재연결 대기 시간 (밀리초)
+        heartbeatIncoming: 4000, // 서버->클라이언트 핑 (밀리초)
+        heartbeatOutgoing: 4000, // 클라이언트->서버 핑 (밀리초)
+      });
+
+      // 이벤트 핸들러 등록
+      client.onConnect = () => {
+        console.log("WebSocket connected!");
+      };
+
+      client.onStompError = (frame) => {
+        console.error("Broker reported error:", frame.headers["message"]);
+        console.error("Additional details:", frame.body);
+      };
+
+      // 연결 활성화
+      client.activate();
+    } catch (err) {
+      console.log("Connection error:", err);
     }
-  };
-
-  const publish = (noteContent: string) => {
-    if (!client.current || !roomId) {
-      console.error("클라이언트 또는 roomId가 없습니다.");
-      return;
-    }
-
-    client.current.publish({
-      destination: `/pub/room/${roomId}`,
-      body: JSON.stringify({ payload: noteContent, userId: 1 }), // 필요한 데이터 JSON 형태로 전송
-    });
-
-    console.log("메시지 발행:", noteContent);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,7 +89,7 @@ export default function Chat() {
       console.error("STOMP 연결이 설정되지 않았습니다.");
       return;
     }
-    publish(message);
+    // publish(message);
     setMessage(""); // 입력 초기화
   };
 
@@ -180,9 +129,6 @@ export default function Chat() {
                     }`}
                   >
                     {msg.payload}
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    {formatToTimeAgo(msg.created_at.toString())}
                   </span>
                 </div>
               </div>
