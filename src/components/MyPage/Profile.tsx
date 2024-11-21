@@ -21,9 +21,13 @@ export default function Profile() {
       <div className="m-4 *:p-1">
         <h2 className="text-xl font-semibold">매너학점</h2>
       </div>
-      <div className="flex flex-col">
-        <span className="flex justify-end mr-8 text-xl font-semibold">3.5</span>
-        <MannerScoreBar score={3.5} />
+      <div className="flex flex-col w-full">
+        <span className="text-end text-xl font-bold text-emerald-600 mr-6 px-2">
+          3.5 🌱
+        </span>
+        <div className="px-6">
+          <MannerScoreBar score={3.5} />
+        </div>
       </div>
     </div>
   );
