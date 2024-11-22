@@ -94,12 +94,13 @@ export default function DetailProduct() {
         </div>
         <div className="flex gap-1 items-center">
           <h3 className="text-lg">{post.userNickname}님</h3>
-          <p className="text-lg">🌱</p>
         </div>
         <div className="flex-grow"></div>
-        <div className="flex flex-col text-right">
-          <MannerScoreBar score={3} />
-          <span className="text-lg text-emerald-800 font-semibold">{3}</span>
+        <div className="flex flex-col text-right w-20 justify-center">
+          <MannerScoreBar score={3.5} />
+          <span className="text-lg text-emerald-800 font-semibold">
+            {3.5} 🌱
+          </span>
         </div>
       </div>
 
