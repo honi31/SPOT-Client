@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Client } from "@stomp/stompjs";
+import { Client, IMessage } from "@stomp/stompjs";
 import { useAuth } from "../context/AuthContext";
 import { createChatRoom } from "../api/chat/chat";
 import { useParams } from "react-router-dom";
@@ -46,36 +46,83 @@ export default function Chat() {
     };
 
     fetchRoomId();
-    connect();
+  }, []);
+
+  useEffect(() => {
+    if (roomId) {
+      connect();
+    }
   }, [roomId]);
 
   const connect = () => {
     try {
       // Client 객체 생성 및 설정
-      const client = new Client({
+      const stompClient = new Client({
         brokerURL: "/ws",
         debug: (str) => {
-          console.log(str); // 디버그 로깅
+          console.log("STOMP Debug:", str);
+          if (str.includes("data")) {
+            console.log("Received raw data:", str); // 수신된 데이터 출력
+          } // 디버그 로깅
         },
+
+        connectHeaders: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+
         reconnectDelay: 5000, // 자동 재연결 대기 시간 (밀리초)
         heartbeatIncoming: 4000, // 서버->클라이언트 핑 (밀리초)
         heartbeatOutgoing: 4000, // 클라이언트->서버 핑 (밀리초)
       });
 
       // 이벤트 핸들러 등록
-      client.onConnect = () => {
+      // 연결 성공
+      stompClient.onConnect = () => {
         console.log("WebSocket connected!");
+        setIsConnected(true);
+
+        try {
+          // 채팅방 구독
+          stompClient.subscribe(
+            `/sub/room/${roomId}`,
+            (message: IMessage) => {
+              const receivedMessage = JSON.parse(message.body);
+              setMessages((prevMessages) => [...prevMessages, receivedMessage]);
+            },
+            {
+              Authorization: `Bearer ${accessToken}`, // 토큰 헤더 추가
+            }
+          );
+          console.log(`Successfully subscribed to /sub/room/${roomId}`);
+        } catch (subError) {
+          console.error("Failed to subscribe to the channel:", subError);
+        }
       };
 
-      client.onStompError = (frame) => {
+      stompClient.onStompError = (frame) => {
         console.error("Broker reported error:", frame.headers["message"]);
         console.error("Additional details:", frame.body);
       };
 
       // 연결 활성화
-      client.activate();
+      stompClient.activate();
+      client.current = stompClient;
     } catch (err) {
       console.log("Connection error:", err);
+    }
+  };
+
+  const publishMessage = (content: string) => {
+    if (client.current && client.current.connected) {
+      client.current.publish({
+        destination: `/pub/room/${roomId}`,
+        body: JSON.stringify({ noteContent: content }),
+        headers: {
+          Authorization: `Bearer ${accessToken}`, // 토큰 헤더 추가
+        },
+      });
+    } else {
+      console.error("STOMP 클라이언트가 연결되지 않았습니다.");
     }
   };
 
@@ -85,12 +132,10 @@ export default function Chat() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isConnected) {
-      console.error("STOMP 연결이 설정되지 않았습니다.");
-      return;
+    if (message.trim()) {
+      publishMessage(message);
+      setMessage(""); // 입력 초기화
     }
-    // publish(message);
-    setMessage(""); // 입력 초기화
   };
 
   return (
