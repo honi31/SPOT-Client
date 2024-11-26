@@ -58,12 +58,9 @@ export default function Chat() {
     try {
       // Client 객체 생성 및 설정
       const stompClient = new Client({
-        brokerURL: "/ws",
+        brokerURL: "ws://localhost:8080/ws",
         debug: (str) => {
           console.log("STOMP Debug:", str);
-          if (str.includes("data")) {
-            console.log("Received raw data:", str); // 수신된 데이터 출력
-          } // 디버그 로깅
         },
 
         connectHeaders: {
@@ -155,11 +152,12 @@ export default function Chat() {
                 }`}
               >
                 {msg.userId !== 1 && (
-                  <img
-                    src={msg.user.avatar}
-                    alt={msg.user.username}
-                    className="w-8 h-8 rounded-full"
-                  />
+                  // <img
+                  //   src={msg.user.avatar}
+                  //   alt={msg.user.username}
+                  //   className="w-8 h-8 rounded-full"
+                  // />
+                  <div></div>
                 )}
                 <div
                   className={`flex flex-col gap-1 ${
