@@ -5,6 +5,7 @@ import { createChatRoom } from "../api/chat/chat";
 import { useParams } from "react-router-dom";
 import ProductCard from "../components/Chat/ProductCard";
 import { ArrowUpCircleIcon } from "@heroicons/react/24/outline";
+import ChatMessageList from "../components/Chat/ChatMessageList";
 
 interface User {
   id: number;
@@ -20,6 +21,15 @@ interface Message {
   created_at: Date;
 }
 
+interface Chatting {
+  id: number;
+  nickname: string;
+  profile: string;
+  chatting: string;
+  time: string;
+  isMe: boolean;
+}
+
 export default function Chat() {
   const { id } = useParams<{ id: string }>();
   const { isLoggedIn } = useAuth();
@@ -30,6 +40,7 @@ export default function Chat() {
   const client = useRef<Client | null>(null);
   const accessToken = localStorage.getItem("accessToken");
 
+  const [chattings, setChattings] = useState<Chatting[]>([]);
   useEffect(() => {
     // 채팅방 생성
     const fetchRoomId = async () => {
@@ -80,16 +91,19 @@ export default function Chat() {
 
         try {
           // 채팅방 구독
-          stompClient.subscribe(
-            `/sub/room/${roomId}`,
-            (message: IMessage) => {
-              const receivedMessage = JSON.parse(message.body);
-              setMessages((prevMessages) => [...prevMessages, receivedMessage]);
-            },
-            {
-              Authorization: `Bearer ${accessToken}`, // 토큰 헤더 추가
-            }
-          );
+          stompClient.subscribe(`/sub/room/${roomId}`, (message: IMessage) => {
+            const receivedMessage = JSON.parse(message.body);
+            const newChat = {
+              id: receivedMessage.id,
+              nickname: receivedMessage.user.username,
+              profile: receivedMessage.user.avatar || "default",
+              chatting: receivedMessage.payload,
+              time: new Date(receivedMessage.created_at).toLocaleTimeString(),
+              isMe: receivedMessage.userId === 1, // 본인 여부 판단 로직 (수정 가능)
+            };
+
+            setChattings((prevChattings) => [...prevChattings, newChat]);
+          });
           console.log(`Successfully subscribed to /sub/room/${roomId}`);
         } catch (subError) {
           console.error("Failed to subscribe to the channel:", subError);
@@ -114,9 +128,6 @@ export default function Chat() {
       client.current.publish({
         destination: `/pub/room/${roomId}`,
         body: JSON.stringify({ noteContent: content }),
-        headers: {
-          Authorization: `Bearer ${accessToken}`, // 토큰 헤더 추가
-        },
       });
     } else {
       console.error("STOMP 클라이언트가 연결되지 않았습니다.");
@@ -131,6 +142,19 @@ export default function Chat() {
     e.preventDefault();
     if (message.trim()) {
       publishMessage(message);
+
+      // 로컬에서 전송 메시지 즉시 반영
+      setChattings((prev) => [
+        ...prev,
+        {
+          id: Date.now(), // 임시 ID
+          nickname: "나",
+          profile: "default_avatar",
+          chatting: message,
+          time: new Date().toLocaleTimeString(),
+          isMe: true,
+        },
+      ]);
       setMessage(""); // 입력 초기화
     }
   };
@@ -143,11 +167,11 @@ export default function Chat() {
             <ProductCard />
           </div>
 
-          <div className="flex-grow overflow-y-auto p-5 flex flex-col gap-5">
-            {messages.map((msg) => (
+          <div className="flex-grow overflow-y-auto p-5">
+            {/* {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex gap-2 items-start ${
+                className={`flex gap-2 items-end ${
                   msg.userId === 1 ? "justify-end" : ""
                 }`}
               >
@@ -175,23 +199,37 @@ export default function Chat() {
                   </span>
                 </div>
               </div>
+            ))} */}
+            {chattings.map(({ id, nickname, chatting, time, isMe }) => (
+              <ChatMessageList
+                key={id}
+                nickname={nickname}
+                chatting={chatting}
+                time={time}
+                isMe={isMe}
+              />
             ))}
-
-            <div className="sticky bottom-0 p-2">
-              <form className="flex relative" onSubmit={handleSubmit}>
-                <input
-                  required
-                  onChange={handleChange}
-                  value={message}
-                  className="bg-transparent rounded-full w-full h-10 focus:outline-none p-2 ring-2 focus:ring-4 transition ring-neutral-200 focus:ring-neutral-50 border-none placeholder:text-neutral-400"
-                  type="text"
-                  placeholder="채팅을 입력해주세요..."
-                />
-                <button type="submit" className="absolute right-0">
-                  <ArrowUpCircleIcon className="w-10 h-10 text-emerald-500 transition-colors hover:text-emerald-300" />
-                </button>
-              </form>
-            </div>
+          </div>
+          <div className="fixed bottom-0 left-0 items-center w-full bg-white p-2 z-20 pb-4 px-4">
+            <form
+              className="flex w-full items-center gap-2 relative"
+              onSubmit={handleSubmit}
+            >
+              <input
+                required
+                onChange={handleChange}
+                value={message}
+                className="flex-grow bg-gray-100 rounded-full h-11 focus:outline-none p-2 ring-2 focus:ring-4 transition ring-neutral-200 focus:ring-neutral-50 border-none placeholder:text-neutral-400"
+                type="text"
+                placeholder="채팅을 입력해주세요..."
+              />
+              <button
+                type="submit"
+                className="absolute right-1 top-1/2 transform -translate-y-1/2"
+              >
+                <ArrowUpCircleIcon className="w-11 h-11 text-emerald-500 transition-colors hover:text-emerald-300" />
+              </button>
+            </form>
           </div>
         </div>
       ) : (
