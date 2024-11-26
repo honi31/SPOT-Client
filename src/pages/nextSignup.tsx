@@ -1,7 +1,7 @@
 import Select from "react-select";
 import useSignupForm from "../components/Signup/useSignupForm";
 import { Controller } from "react-hook-form";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -99,6 +99,7 @@ export default function NextSignup() {
       startTimer();
     } catch (error) {
       console.log("인증번호 전송 중 오류", error);
+      alert("이미 존재하는 이메일입니다!");
     }
   };
 
@@ -185,6 +186,10 @@ export default function NextSignup() {
     setNicknameFeedback(null);
   };
 
+  const toLogin = () => {
+    navigate("/login");
+  };
+
   return (
     <div className="flex flex-col py-8 px-5">
       <h2 className="text-2xl font-bold">회원 정보</h2>
@@ -254,6 +259,10 @@ export default function NextSignup() {
               </button>
             </>
           )}
+          <div className="flex text-gray-500 gap-2 mt-4 p-1">
+            <p>이미 회원가입을 하셨나요?</p>
+            <button onClick={toLogin}>로그인 하러가기</button>
+          </div>
         </div>
       ) : (
         <div className="flex flex-col mt-12">
