@@ -1,5 +1,5 @@
 import { UserIcon } from "@heroicons/react/24/solid";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ChatBubbleOvalLeftEllipsisIcon } from "@heroicons/react/24/outline";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
 import { FaceFrownIcon } from "@heroicons/react/24/outline";
@@ -19,11 +19,15 @@ export default function DetailProduct() {
   const [likes, setLikes] = useState(0); // 초기 찜 수를 0으로 설정
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [writerId, setWriterId] = useState(0);
+
+  const navigate = useNavigate();
   // 상품 상세 정보 가져오기
   const handleDetailProduct = async () => {
     try {
       const response = await getDetailProduct(Number(id));
       setPost(response.data);
+      setWriterId(response.data.writerId);
       console.log(response);
     } catch (error) {
       console.log(error);
@@ -70,6 +74,10 @@ export default function DetailProduct() {
     return <div>Loading...</div>;
   }
 
+  const toProfile = () => {
+    navigate(`/userProfile/${writerId}`);
+  };
+
   return (
     <div>
       <header className="w-full border-b flex justify-between items-center">
@@ -89,7 +97,7 @@ export default function DetailProduct() {
         />
       </div>
       <div className="p-5 flex items-center gap-3 border-b">
-        <div className="size-9 rounded-full">
+        <div onClick={toProfile} className="size-9 rounded-full">
           <UserIcon />
         </div>
         <div className="flex gap-1 items-center">

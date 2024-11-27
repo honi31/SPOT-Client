@@ -16,6 +16,7 @@ import ChatList from "./pages/chatlist";
 import { AuthProvider } from "./context/AuthContext";
 import FindPassword from "./pages/findPassword";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import UserProfile from "./pages/userProfile";
 
 // QueryClient 생성
 const queryClient = new QueryClient();
@@ -40,6 +41,10 @@ function App() {
             <Route path="/changepassword" element={<ChangePassword />}></Route>
             <Route path="/chatlist" element={<ChatList />}></Route>
             <Route path="/findPassword" element={<FindPassword />}></Route>
+            <Route
+              path="/userProfile/:writerId"
+              element={<UserProfile />}
+            ></Route>
           </Routes>
         </AuthProvider>
       </Router>
