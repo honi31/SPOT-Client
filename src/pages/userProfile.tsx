@@ -1,4 +1,6 @@
 import { ChevronLeftIcon, UserIcon } from "@heroicons/react/24/outline";
+import Profile from "../components/User/UserProfile";
+import MannerScoreBar from "../components/User/MannerScoreBar";
 
 export default function userProfile() {
   return (
@@ -9,11 +11,12 @@ export default function userProfile() {
         </div>
         <span className="flex-grow text-center text-lg">프로필</span>
       </header>
-      <div className="flex">
-        <div>
-          <UserIcon className="size-9" />
+      <div className="w-full flex flex-col justify-between gap-16 p-3">
+        <Profile />
+        <div className="flex flex-col gap-2">
+          <p className="text-base font-semibold">매너학점</p>
+          <MannerScoreBar score={3.5} />
         </div>
-        <span>호니</span>
       </div>
     </div>
   );
