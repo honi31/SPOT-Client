@@ -2,7 +2,7 @@ import { UserIcon } from "@heroicons/react/24/outline";
 
 export default function UserProfile() {
   return (
-    <div className="flex w-full p-4 gap-4 items-center border">
+    <div className="flex w-full p-4 gap-4 items-center border rounded-lg shadow-md border-gray-100">
       <div>
         <UserIcon className="size-12 border rounded-full" />
       </div>
