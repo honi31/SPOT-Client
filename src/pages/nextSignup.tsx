@@ -10,6 +10,8 @@ import { signup } from "../api/signup/register";
 import { sendCode, verifyEmailCode } from "../api/signup/email";
 import { checkNickname } from "../api/signup/nickname";
 import { useDebounce } from "use-debounce";
+import { majors } from "../data/major";
+
 interface EmailFormInputs {
   email: string;
 }
@@ -332,7 +334,7 @@ export default function NextSignup() {
                 render={({ field }) => (
                   <Select
                     {...field}
-                    options={options}
+                    options={majors}
                     placeholder={placeholder}
                     isClearable
                     className="h-12"
