@@ -1,9 +1,24 @@
+import { useEffect } from "react";
 import ChatRoomList from "../components/Chat/ChatRoomList";
 import NavBar from "../components/Nav/NavBar";
 import { useAuth } from "../context/AuthContext";
+import { getChatList } from "../api/chat/chatList";
 
 export default function ChatList() {
   const { isLoggedIn, logout } = useAuth();
+
+  useEffect(() => {
+    const fetchChatList = async () => {
+      try {
+        const response = await getChatList();
+        console.log(response);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchChatList();
+  }, []);
+
   return (
     <>
       {isLoggedIn ? (
