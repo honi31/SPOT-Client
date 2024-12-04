@@ -35,7 +35,7 @@ function App() {
             <Route path="/main" element={<Main />}></Route>
             <Route path="/write" element={<Write />}></Route>
             <Route path="/product/:id" element={<DetailProduct />}></Route>
-            <Route path="/chat/:id" element={<Chat />}></Route>
+            <Route path="/chat/:roomId" element={<Chat />}></Route>
             <Route path="/search" element={<Search />}></Route>
             <Route path="/mypage" element={<MyPage />}></Route>
             <Route path="/changepassword" element={<ChangePassword />}></Route>

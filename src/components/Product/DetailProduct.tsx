@@ -11,6 +11,8 @@ import MannerScoreBar from "../User/MannerScoreBar";
 import { getDetailProduct } from "../../api/product/post";
 import { addWish } from "../../api/like/addWish";
 import { cancelWish } from "../../api/like/cancelWish";
+import { createChatRoom } from "../../api/chat/chat";
+import { enterChat } from "../../api/chat/enterChat";
 
 export default function DetailProduct() {
   const { id } = useParams<{ id: string }>();
@@ -78,6 +80,25 @@ export default function DetailProduct() {
     navigate(`/userProfile/${writerId}`);
   };
 
+  const handleChat = async () => {
+    try {
+      // 채팅방 생성 또는 기존 채팅방 입장 로직
+      const response = await createChatRoom(Number(id));
+      if (response?.data?.roomId) {
+        navigate(`/chat/${response.data.roomId}`); // 채팅방으로 이동
+      } else {
+        // 만약 createChatRoom 실패 시 기존 채팅방으로 입장 시도
+        const existingRoom = await enterChat(Number(id));
+        if (existingRoom?.data?.roomId) {
+          navigate(`/chat/${existingRoom.data.roomId}`); // 기존 채팅방으로 이동
+        } else {
+          console.error("채팅방 정보를 찾을 수 없습니다.");
+        }
+      }
+    } catch (error) {
+      console.error("채팅 연결 실패:", error);
+    }
+  };
   return (
     <div>
       <header className="w-full border-b flex justify-between items-center">
@@ -145,15 +166,15 @@ export default function DetailProduct() {
             </div>
           </div>
         </div>
-        <Link
-          to={`/chat/${id}`}
+        <button
+          onClick={handleChat}
           className="w-full h-full flex items-center justify-center font-semibold bg-emerald-500 text-white text-center rounded-md hover:bg-emerald-600 focus:animate-pulse p-2 text-xl"
         >
           <div className="flex justify-center items-center gap-1">
             채팅하기
             <ChatBubbleOvalLeftEllipsisIcon className="size-8 items-center" />
           </div>
-        </Link>
+        </button>
       </div>
     </div>
   );
