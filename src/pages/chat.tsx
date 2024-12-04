@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom";
 import ProductCard from "../components/Chat/ProductCard";
 import { ArrowUpCircleIcon } from "@heroicons/react/24/outline";
 import ChatMessageList from "../components/Chat/ChatMessageList";
+import { enterChat } from "../api/chat/enterChat";
 
 interface User {
   id: number;
@@ -31,9 +32,9 @@ interface Chatting {
 }
 
 export default function Chat() {
-  const { id } = useParams<{ id: string }>();
+  const { roomId } = useParams<{ roomId: string }>();
   const { isLoggedIn } = useAuth();
-  const [roomId, setRoomId] = useState<number | null>(null);
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [message, setMessage] = useState<string>("");
   const [isConnected, setIsConnected] = useState(false);
@@ -41,27 +42,36 @@ export default function Chat() {
   const accessToken = localStorage.getItem("accessToken");
 
   const [chattings, setChattings] = useState<Chatting[]>([]);
-  useEffect(() => {
-    // 채팅방 생성
-    const fetchRoomId = async () => {
-      try {
-        const response = await createChatRoom(Number(id));
-        if (response?.data?.roomId) {
-          setRoomId(response.data.roomId);
-        } else {
-          console.error("roomId가 응답에 없습니다.");
-        }
-      } catch (error) {
-        console.error("채팅방 생성 실패:", error);
-      }
-    };
 
-    fetchRoomId();
-  }, []);
+  const fetchPreviousMessages = async () => {
+    try {
+      const response = await enterChat(Number(roomId)); // 기존 채팅방 메시지 가져오기
+      console.log(response);
+
+      if (response?.data) {
+        const previousMessages = response.data.map((msg: any) => ({
+          id: Date.now() + Math.random(), // 고유 ID 생성
+          nickname: msg.sender, // 발신자 닉네임
+          profile: "default_avatar", // 발신자 프로필 (임의값)
+          chatting: JSON.parse(msg.noteContent).noteContent, // 메시지 내용
+          time: new Date(msg.sentAt).toLocaleTimeString(), // 메시지 시간
+          isMe: msg.isSender, // 발신자 여부
+        }));
+        setChattings(previousMessages); // 이전 메시지 상태 업데이트
+      } else {
+        console.error("No previous messages found");
+      }
+    } catch (error) {
+      console.error("Failed to fetch previous messages:", error);
+    }
+  };
 
   useEffect(() => {
     if (roomId) {
-      connect();
+      fetchPreviousMessages(); // 이전 채팅 기록 가져오기
+      connect(); // WebSocket 연결
+    } else {
+      console.log("no roomid");
     }
   }, [roomId]);
 
