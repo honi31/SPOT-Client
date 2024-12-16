@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
-import ReportModal from "../Modal/Report";
+import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getPosts } from "../../api/product/post";
+import { getPurposePosts } from "../../api/product/post";
 
 interface Post {
   id: number;
@@ -19,48 +17,85 @@ interface Post {
   type: string;
 }
 
-interface Filters {
-  category_id: number;
-}
 interface ProductListProps {
   selectedTab: string;
 }
 
 export default function ProductList({ selectedTab }: ProductListProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [posts, setPosts] = useState<Post[]>([]);
-  const [filters, setFilters] = useState<Filters>({
-    category_id: 1,
-  });
+  const [lastPostId, setLastPostId] = useState<number | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // 데이터 요청 중 상태임
+
+  const observerRef = useRef<HTMLDivElement | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await getPosts(filters);
-        setPosts(response.content); // 서버로부터 받은 데이터를 상태에 저장
-      } catch (error) {
-        console.error("Error fetching posts:", error);
+  // 게시글 가져오기
+  const fetchPosts = async (isInitialLoad = false) => {
+    if (isLoading || (!hasMore && !isInitialLoad)) return; // 중복 호출 방지 및 더 가져올 데이터가 없을 때
+
+    setIsLoading(true);
+
+    try {
+      const response = await getPurposePosts({
+        limit: 10,
+        lastPostId: isInitialLoad ? undefined : lastPostId ?? undefined,
+        postFor: selectedTab === "팔래요" ? "SALE" : "PURCHASE",
+      });
+
+      if (isInitialLoad) {
+        // 초기 로드 시 기존 데이터 삭제
+        setPosts(response.posts);
+      } else {
+        // 무한 스크롤 시 데이터 추가
+        setPosts((prevPosts) => [...prevPosts, ...response.posts]);
       }
-    };
 
-    fetchPosts();
-  }, [filters]);
+      // 상태 업데이트
+      setLastPostId(
+        response.lastId && response.lastId > 0 ? response.lastId - 1 : null
+      );
+      setHasMore(response.hasMore);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  // 탭 변경 시 상태 초기화
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const categoryParam = searchParams.get("category_id");
-    const category_id = categoryParam ? parseInt(categoryParam, 10) : 1;
+    setPosts([]); // 기존 게시글 초기화
+    setLastPostId(null); // lastPostId 초기화
+    setHasMore(true); // hasMore 초기화
+    setIsLoading(false); // 로딩 상태 초기화
+    fetchPosts(true); // 첫 데이터 가져오기
+  }, [selectedTab, location.search]);
 
-    setFilters({
-      category_id, // 카테고리 필터만 설정
-    });
-  }, [location.search]);
+  // IntersectionObserver 설정
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && hasMore && !isLoading) {
+          fetchPosts(); // 마지막 요소에 도달하면 다음 데이터를 가져옵니다.
+        }
+      },
+      { threshold: 1.0 }
+    );
+
+    if (observerRef.current) observer.observe(observerRef.current);
+
+    return () => {
+      if (observerRef.current) observer.unobserve(observerRef.current);
+    };
+  }, [hasMore, isLoading]);
+
   const handleProductClick = (id: number) => {
     navigate(`/product/${id}`);
   };
+
   return (
     <>
       <div className="mt-4 w-full max-w-screen-sm mx-auto relative">
@@ -81,59 +116,18 @@ export default function ProductList({ selectedTab }: ProductListProps) {
               <div className="flex flex-col gap-1 flex-grow">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-bold">{post.title}</h3>
-                  <div
-                    className="size-5 mr-4 z-2"
-                    onClick={() => setIsModalOpen(true)}
-                  >
-                    <EllipsisVerticalIcon className="h-6 w-6 text-gray-500" />
-                  </div>
                 </div>
                 <span className="text-sm text-gray-500">{post.createdAt}</span>
-
                 <div className="flex justify-between items-center w-full">
                   <div className="flex items-center gap-1">
-                    {post.saleStatus === "판매 완료" && (
-                      <span className="text-xs rounded-md font-semibold bg-gray-500 text-white p-1">
-                        {post.saleStatus}
-                      </span>
-                    )}
-                    {post.saleStatus === "예약중" && (
-                      <span className="text-xs rounded-md font-semibold bg-emerald-500 text-white p-1">
-                        {post.saleStatus}
-                      </span>
-                    )}
                     <span className="text-md text-gray-500 text-center items-center">
                       {post.sellerNickname}
                     </span>
-                    <span className="text-gray-400">|</span>
                     <p className="text-md text-gray-600 font-bold mr-8 text-center items-center">
                       {post.price}원
                     </p>
                   </div>
-                  <div className="text-sm text-gray-600 ml-auto mr-4 items-center flex">
-                    {" "}
-                    <div className="size-5 items-center">
-                      <svg
-                        data-slot="icon"
-                        fill="none"
-                        stroke-width="1.5"
-                        stroke="red"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                        aria-hidden="true"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
-                        ></path>
-                      </svg>{" "}
-                    </div>
-                    <span className="text-center items-center ml-1">
-                      {" "}
-                      {post.likes}
-                    </span>
-                  </div>
+                  <span className="text-sm text-gray-600">{post.likes}</span>
                 </div>
               </div>
             </div>
@@ -142,7 +136,8 @@ export default function ProductList({ selectedTab }: ProductListProps) {
           <div className="text-center text-gray-500">검색 결과가 없습니다.</div>
         )}
       </div>
-      {isModalOpen && <ReportModal setIsModalOpen={setIsModalOpen} />}
+      <div ref={observerRef} style={{ height: "1px" }} />
+      {isLoading && <div className="text-center text-gray-500">로딩 중...</div>}
     </>
   );
 }
