@@ -62,7 +62,7 @@ export default function WriteForm() {
       for (const file of fileArray) {
         try {
           // Presigned URL 요청
-          const response = await axios.get(`/aws/file/${file.name}`);
+          const response = await axios.get(`/aws/puturl/${file.name}`);
           const presignedUrl = response.data;
           console.log(presignedUrl);
           // Presigned URL로 이미지 업로드
@@ -105,7 +105,15 @@ export default function WriteForm() {
 
     try {
       // 게시글 등록 API 호출
-      await createPost(4, title, content, postFor, "TRADING", Number(price)); // imageUrls 추가
+      await createPost(
+        4,
+        title,
+        content,
+        postFor,
+        "TRADING",
+        Number(price),
+        imageUrls
+      ); // imageUrls 추가
       console.log("게시글이 성공적으로 등록되었습니다.");
 
       // 성공 시 알림 표시 또는 페이지 이동 등의 로직 추가
