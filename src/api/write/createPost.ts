@@ -6,7 +6,8 @@ export async function createPost(
   content: string,
   postFor: "PURCHASE" | "SALE",
   postStatus: "TRADING" | "TRADE_COMPLETE",
-  price: number
+  price: number,
+  imageUrls: string[]
 ) {
   try {
     const response = await apiClient.post("api/post/create", {
@@ -16,6 +17,7 @@ export async function createPost(
       postFor, // 구매/판매 여부 ("PURCHASE" 또는 "SALE")
       postStatus: "TRADING", // 고정값으로 설정 (현재 진행 중인 상태로 기본 설정)
       price, // 금액
+      imageUrls,
     });
 
     console.log("게시글 등록 성공:", response.data);
