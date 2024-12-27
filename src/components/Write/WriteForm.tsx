@@ -4,6 +4,7 @@ import { PhotoIcon } from "@heroicons/react/24/solid";
 import Select from "react-select";
 import { createPost } from "../../api/write/createPost";
 import axios from "axios"; // axios for API calls
+import { apiClient } from "../../api/apiClient";
 
 export default function WriteForm() {
   const { register, handleSubmit, control, setValue, errors, watch } =
@@ -62,25 +63,36 @@ export default function WriteForm() {
       for (const file of fileArray) {
         try {
           // Presigned URL 요청
-          const response = await axios.get(`/aws/puturl/${file.name}`);
-          const presignedUrl = response.data;
-          console.log(presignedUrl);
+          const response = await apiClient.get(
+            `/aws/puturl?filenames=${file.name}`
+          );
+          const presignedUrls = response.data;
+          const presignedUrl = presignedUrls[file.name];
+          console.log("요청주소", presignedUrl);
           // Presigned URL로 이미지 업로드
+
           await axios.put(presignedUrl, file, {
             headers: {
               "Content-Type": file.type,
+              "Cache-Control": "max-age=31536000, immutable",
             },
-            withCredentials: false,
           });
-
+          const imageUrl = extractImageUrl(presignedUrl);
+          console.log("잘라진 url", imageUrl);
           // 업로드 완료 후 presigned URL의 이미지 링크를 저장
-          const imageUrl = presignedUrl.split("?")[0]; // URL에서 ?를 제외한 순수 URL만 저장
+          // URL에서 ?를 제외한 순수 URL만 저장
           setImageUrls((prevUrls) => [...prevUrls, imageUrl]);
         } catch (error) {
           console.error("이미지 업로드 실패:", error);
         }
       }
     }
+  };
+
+  const extractImageUrl = (presignedUrl: string) => {
+    const baseUrl = presignedUrl.split("?")[0]; // ? 이전 부분 자르기
+    const startIndex = baseUrl.indexOf(".com/") + 5; // .com/ 이후 시작 (5는 .com/의 길이)
+    return baseUrl.substring(startIndex); // 잘라낸 결과 반환
   };
 
   const removeImage = (index: number) => {
