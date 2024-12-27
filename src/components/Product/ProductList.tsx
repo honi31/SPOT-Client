@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { getPurposePosts } from "../../api/product/post";
 
 interface Post {
-  id: number;
+  postId: number;
   title: string;
   sellerNickname: string;
   price: string;
@@ -102,9 +102,9 @@ export default function ProductList({ selectedTab }: ProductListProps) {
         {posts.length > 0 ? (
           posts.map((post: Post) => (
             <div
-              key={post.id}
+              key={post.postId}
               className="flex mb-4 pb-4 border-b-2"
-              onClick={() => handleProductClick(post.id)}
+              onClick={() => handleProductClick(post.postId)}
             >
               <div className="relative size-24 items-center rounded-md overflow-hidden mx-4">
                 <img
