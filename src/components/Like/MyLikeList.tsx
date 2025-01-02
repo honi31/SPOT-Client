@@ -16,18 +16,8 @@ export default function MyLikeList() {
   useEffect(() => {
     const fetchLikeList = async () => {
       try {
-        const response = await getWishList();
-        if (response && response.data) {
-          // API 응답 데이터 매핑
-          const lists: LikeList[] = response.data.map((list: any) => ({
-            wishId: list.wishId,
-            writer: list.writer,
-            image: list.image,
-            title: list.title,
-            content: list.content,
-          }));
-          setlikeList(lists);
-        }
+        const lists: LikeList[] = await getWishList(); // getWishList에서 response.data만 반환
+        setlikeList(lists); // 바로 상태 업데이트
       } catch (err) {
         console.error("찜 목록 조회 실패", err);
       }
@@ -49,10 +39,10 @@ export default function MyLikeList() {
               alt="Profile"
               className="size-10 rounded-full mr-2"
             />
-            <div className="flex flex-col flex-1">
-              <span className="font-semibold mb-1">{list.writer}</span>
-              <span className="text-gray-400 text-sm">{list.title}</span>
-              <span className="text-gray-400 text-sm">{list.content}</span>
+            <div className="flex flex-col flex-1 ml-2">
+              <span className="mb-1">{list.title}</span>
+              <span className="text-gray-400 text-sm">{list.writer}</span>
+              <span className="font-semibold">{list.price}</span>
             </div>
           </div>
         ))
