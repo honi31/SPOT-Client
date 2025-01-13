@@ -10,6 +10,10 @@ export default function WriteForm() {
   const { register, handleSubmit, control, setValue, errors, watch } =
     useWriteForm();
   const [selectedTrade, setSelectedTrade] = useState("sell");
+  const [isSharing, setIsSharing] = useState(false);
+  const [previews, setPreviews] = useState<string[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]); // 업로드된 이미지의 S3 URL 리스트
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const handleSelect = (tradeType: string) => {
     setSelectedTrade(tradeType);
@@ -17,37 +21,22 @@ export default function WriteForm() {
     setValue("price", "");
   };
 
-  const [isSharing, setIsSharing] = useState(false);
-  const handleShareChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setIsSharing(event.target.checked);
-    if (event.target.checked) {
-      setValue("price", "0");
-    } else {
-      setValue("price", "");
-    }
+  const handleCategoryChange = (option: any) => {
+    setSelectedCategory(option?.value || null);
   };
 
   const formatPrice = (value: string) => {
     const numericValue = value.replace(/\D/g, "");
-    return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "";
+    return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
   const handlePriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     let value = event.target.value.replace(/[^0-9]/g, "");
-    if (value === "") {
-      setValue("price", "");
-    } else {
-      const formattedValue = formatPrice(value);
-      setValue("price", formattedValue + " 원");
-    }
+    setValue("price", formatPrice(value));
   };
-
-  const [previews, setPreviews] = useState<string[]>([]);
-  const [imageUrls, setImageUrls] = useState<string[]>([]); // Presigned URL 저장할 배열
 
   const onImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = event.target;
-
     if (files) {
       const fileArray = Array.from(files);
 
@@ -59,28 +48,20 @@ export default function WriteForm() {
       const newPreviews = fileArray.map((file) => URL.createObjectURL(file));
       setPreviews((prevPreviews) => [...prevPreviews, ...newPreviews]);
 
-      // Presigned URL을 받아와서 이미지 업로드
       for (const file of fileArray) {
         try {
-          // Presigned URL 요청
           const response = await apiClient.get(
             `/aws/puturl?filenames=${file.name}`
           );
-          const presignedUrls = response.data;
-          const presignedUrl = presignedUrls[file.name];
-          console.log("요청주소", presignedUrl);
-          // Presigned URL로 이미지 업로드
+          const presignedUrl = response.data[file.name];
 
           await axios.put(presignedUrl, file, {
             headers: {
               "Content-Type": file.type,
-              "Cache-Control": "max-age=31536000, immutable",
             },
           });
+
           const imageUrl = extractImageUrl(presignedUrl);
-          console.log("잘라진 url", imageUrl);
-          // 업로드 완료 후 presigned URL의 이미지 링크를 저장
-          // URL에서 ?를 제외한 순수 URL만 저장
           setImageUrls((prevUrls) => [...prevUrls, imageUrl]);
         } catch (error) {
           console.error("이미지 업로드 실패:", error);
@@ -89,69 +70,74 @@ export default function WriteForm() {
     }
   };
 
+  const handleShareChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsSharing(event.target.checked);
+    if (event.target.checked) {
+      setValue("price", "0");
+    } else {
+      setValue("price", "");
+    }
+  };
+
   const extractImageUrl = (presignedUrl: string) => {
-    const baseUrl = presignedUrl.split("?")[0]; // ? 이전 부분 자르기
-    const startIndex = baseUrl.indexOf(".com/") + 5; // .com/ 이후 시작 (5는 .com/의 길이)
-    return baseUrl.substring(startIndex); // 잘라낸 결과 반환
+    const baseUrl = presignedUrl.split("?")[0];
+    const startIndex = baseUrl.indexOf(".com/") + 5;
+    return baseUrl.substring(startIndex);
   };
 
   const removeImage = (index: number) => {
     setPreviews((prevPreviews) => prevPreviews.filter((_, i) => i !== index));
-    setImageUrls((prevUrls) => prevUrls.filter((_, i) => i !== index)); // 이미지 URL 배열에서도 제거
+    setImageUrls((prevUrls) => prevUrls.filter((_, i) => i !== index));
   };
 
   const handleCreatePost = async () => {
-    // 제목, 내용, 가격 등 폼에서 입력된 값 가져오기
     const title = watch("title");
     const content = watch("description");
-    const price = watch("price").replace(/[^0-9]/g, ""); // 숫자 형식으로 변경
-
-    // 거래 방식에 따른 postFor 설정
+    const price = watch("price").replace(/[^0-9]/g, "");
     const postFor = selectedTrade === "sell" ? "SALE" : "PURCHASE";
 
-    // 가격이 입력되지 않았거나 잘못된 경우 처리
-    if (!title || !content || (selectedTrade === "sell" && !price)) {
-      alert("제목, 내용, 가격을 모두 입력해주세요.");
+    if (
+      !title ||
+      !content ||
+      !selectedCategory ||
+      (selectedTrade === "sell" && !price)
+    ) {
+      alert("모든 필드를 채워주세요.");
       return;
     }
 
     try {
-      // 게시글 등록 API 호출
       await createPost(
-        4,
+        4, // 사용자 ID
         title,
         content,
         postFor,
-        "TRADING",
         Number(price),
+        selectedCategory,
         imageUrls
-      ); // imageUrls 추가
-      console.log("게시글이 성공적으로 등록되었습니다.");
-
-      // 성공 시 알림 표시 또는 페이지 이동 등의 로직 추가
+      );
       alert("게시글이 성공적으로 등록되었습니다.");
     } catch (error) {
       console.error("게시글 등록 실패:", error);
-      alert("게시글 등록에 실패했습니다. 다시 시도해주세요.");
+      alert("게시글 등록에 실패했습니다.");
     }
   };
 
-  const category = [
-    { value: "의류", label: "의류" },
-    { value: "교재", label: "교재" },
-    { value: "생필품", label: "생필품" },
-    { value: "전자기기", label: "전자기기" },
-    { value: "나눔", label: "나눔" },
-    { value: "기타", label: "기타" },
+  const categoryOptions = [
+    { value: "CLOTH", label: "의류" },
+    { value: "BOOK", label: "교재" },
+    { value: "DAILY", label: "생필품" },
+    { value: "ELECTRONIC", label: "전자기기" },
+    { value: "SHARE", label: "나눔" },
+    { value: "OTHER", label: "기타" },
   ];
-
   return (
     <div className="flex flex-col">
       <label htmlFor="category" className="p-1 text-sm font-semibold pt-5">
         카테고리
       </label>
       <Select
-        options={category}
+        options={categoryOptions}
         placeholder="상품의 카테고리를 정해주세요"
         isClearable
         isSearchable={true}
