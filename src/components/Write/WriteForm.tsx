@@ -108,7 +108,6 @@ export default function WriteForm() {
 
     try {
       await createPost(
-        4, // 사용자 ID
         title,
         content,
         postFor,
