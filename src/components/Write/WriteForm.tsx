@@ -21,8 +21,10 @@ export default function WriteForm() {
     setValue("price", "");
   };
 
-  const handleCategoryChange = (option: any) => {
-    setSelectedCategory(option?.value || null);
+  const handleCategoryChange = (
+    option: { value: string; label: string } | null
+  ) => {
+    setSelectedCategory(option?.value || null); // 선택된 값이 null이면 상태를 null로 설정
   };
 
   const formatPrice = (value: string) => {
@@ -58,6 +60,7 @@ export default function WriteForm() {
           await axios.put(presignedUrl, file, {
             headers: {
               "Content-Type": file.type,
+              "Cache-Control": "max-age=31536000, immutable",
             },
           });
 
@@ -108,7 +111,6 @@ export default function WriteForm() {
 
     try {
       await createPost(
-        4, // 사용자 ID
         title,
         content,
         postFor,
@@ -131,6 +133,7 @@ export default function WriteForm() {
     { value: "SHARE", label: "나눔" },
     { value: "OTHER", label: "기타" },
   ];
+
   return (
     <div className="flex flex-col">
       <label htmlFor="category" className="p-1 text-sm font-semibold pt-5">
@@ -141,6 +144,7 @@ export default function WriteForm() {
         placeholder="상품의 카테고리를 정해주세요"
         isClearable
         isSearchable={true}
+        onChange={handleCategoryChange}
         className="mb-4"
       ></Select>
       <form className="flex flex-col gap-1">

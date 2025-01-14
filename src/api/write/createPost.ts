@@ -1,7 +1,6 @@
 import { apiClient } from "../apiClient";
 
 export async function createPost(
-  userId: number,
   title: string,
   content: string,
   postFor: "PURCHASE" | "SALE",
@@ -11,7 +10,6 @@ export async function createPost(
 ) {
   try {
     const response = await apiClient.post("api/post/create", {
-      userId, // 작성자 ID
       title, // 게시글 제목
       content, // 게시글 본문
       postFor, // 구매/판매 여부 ("PURCHASE" 또는 "SALE")
