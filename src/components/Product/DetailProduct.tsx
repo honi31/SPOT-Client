@@ -13,6 +13,8 @@ import { addWish } from "../../api/like/addWish";
 import { cancelWish } from "../../api/like/cancelWish";
 import { createChatRoom } from "../../api/chat/chat";
 import { enterChat } from "../../api/chat/enterChat";
+import { TrashIcon } from "@heroicons/react/24/outline";
+import { deletePost } from "../../api/product/deletePost";
 
 export default function DetailProduct() {
   const { id } = useParams<{ id: string }>();
@@ -99,6 +101,16 @@ export default function DetailProduct() {
       console.error("채팅 연결 실패:", error);
     }
   };
+
+  const handleDeletePost = async () => {
+    try {
+      const response = await deletePost(Number(id));
+      alert("삭제성공");
+    } catch (error) {
+      alert("삭제 실패");
+    }
+  };
+
   return (
     <div>
       <header className="w-full border-b flex justify-between items-center">
@@ -124,6 +136,9 @@ export default function DetailProduct() {
         <div className="flex gap-1 items-center">
           <h3 className="text-lg">{post.userNickname}님</h3>
         </div>
+        <button onClick={handleDeletePost}>
+          <TrashIcon className="h-6 w-6 text-gray-500" />
+        </button>
         <div className="flex-grow"></div>
         <div className="flex flex-col text-right w-20 justify-center">
           <MannerScoreBar score={3.5} />
