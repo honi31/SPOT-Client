@@ -15,6 +15,7 @@ import { createChatRoom } from "../../api/chat/chat";
 import { enterChat } from "../../api/chat/enterChat";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { deletePost } from "../../api/product/deletePost";
+import ContextMenu from "../Menu/ContextMenu";
 
 export default function DetailProduct() {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +25,8 @@ export default function DetailProduct() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(false);
   const [writerId, setWriterId] = useState(0);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // 메뉴 열림 상태 관리
+  const [isAuthor, setIsAuthor] = useState(false); // 작성자인지 여부
 
   const navigate = useNavigate();
   // 상품 상세 정보 가져오기
@@ -32,6 +35,7 @@ export default function DetailProduct() {
       const response = await getDetailProduct(Number(id));
       setPost(response.data);
       setWriterId(response.data.writerId);
+      setIsAuthor(response.data.isAuthor);
       console.log(response);
     } catch (error) {
       console.log(error);
@@ -102,15 +106,13 @@ export default function DetailProduct() {
     }
   };
 
-  const handleDeletePost = async () => {
-    try {
-      const response = await deletePost(Number(id));
-      alert("삭제성공");
-    } catch (error) {
-      alert("삭제 실패");
-    }
+  const handleMenuToggle = () => {
+    setIsMenuOpen((prev) => !prev);
   };
 
+  const handleMenuClose = () => {
+    setIsMenuOpen(false);
+  };
   return (
     <div>
       <header className="w-full border-b flex justify-between items-center">
@@ -119,7 +121,10 @@ export default function DetailProduct() {
         </div>
         {/* <div className="p-5 text-2xl font-bold">{translatedCategory}</div> */}
         <div className="p-5">
-          <EllipsisVerticalIcon className="size-10" />
+          <EllipsisVerticalIcon
+            className="size-10 cursor-pointer"
+            onClick={handleMenuToggle} // 메뉴 토글
+          />
         </div>
       </header>
       <div className="relative aspect-square w-full items-center justify-center">
@@ -136,9 +141,7 @@ export default function DetailProduct() {
         <div className="flex gap-1 items-center">
           <h3 className="text-lg">{post.userNickname}님</h3>
         </div>
-        <button onClick={handleDeletePost}>
-          <TrashIcon className="h-6 w-6 text-gray-500" />
-        </button>
+
         <div className="flex-grow"></div>
         <div className="flex flex-col text-right w-20 justify-center">
           <MannerScoreBar score={3.5} />
@@ -147,7 +150,6 @@ export default function DetailProduct() {
           </span>
         </div>
       </div>
-
       <div className="p-5 pb-0">
         <div>
           <h1 className="text-2xl font-semibold">{post.title}</h1>
@@ -168,7 +170,6 @@ export default function DetailProduct() {
       <div className="px-5 py-4">
         <p className="text-lg">{post.content}</p>
       </div>
-
       <div className="fixed w-full bottom-0 left-0 border-t py-2 px-4 bg-white flex justify-between items-center gap-3">
         <div className="flex justify-end border-gray-300 border-2 rounded-md p-2">
           <div className="flex flex-col items-center justify-center">
@@ -190,7 +191,30 @@ export default function DetailProduct() {
             <ChatBubbleOvalLeftEllipsisIcon className="size-8 items-center" />
           </div>
         </button>
-      </div>
+      </div>{" "}
+      {/* ContextMenu */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-10">
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50"
+            onClick={handleMenuClose}
+          ></div>
+
+          {/* 컨텍스트 메뉴: isAuthor에 따라 조건부 렌더링 */}
+          {isAuthor ? (
+            <ContextMenu
+              options={[
+                { label: "수정", onClick: () => console.log("수정") },
+                { label: "삭제", onClick: () => console.log("삭제") },
+              ]}
+            />
+          ) : (
+            <ContextMenu
+              options={[{ label: "신고", onClick: () => console.log("신고") }]}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }
