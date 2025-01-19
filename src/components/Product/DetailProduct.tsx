@@ -15,6 +15,7 @@ import { createChatRoom } from "../../api/chat/chat";
 import { enterChat } from "../../api/chat/enterChat";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { deletePost } from "../../api/product/deletePost";
+import ContextMenu from "../Menu/ContextMenu";
 
 export default function DetailProduct() {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +25,7 @@ export default function DetailProduct() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(false);
   const [writerId, setWriterId] = useState(0);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // 메뉴 열림 상태 관리
 
   const navigate = useNavigate();
   // 상품 상세 정보 가져오기
@@ -111,6 +113,13 @@ export default function DetailProduct() {
     }
   };
 
+  const handleMenuToggle = () => {
+    setIsMenuOpen((prev) => !prev);
+  };
+
+  const handleMenuClose = () => {
+    setIsMenuOpen(false);
+  };
   return (
     <div>
       <header className="w-full border-b flex justify-between items-center">
@@ -119,7 +128,10 @@ export default function DetailProduct() {
         </div>
         {/* <div className="p-5 text-2xl font-bold">{translatedCategory}</div> */}
         <div className="p-5">
-          <EllipsisVerticalIcon className="size-10" />
+          <EllipsisVerticalIcon
+            className="size-10 cursor-pointer"
+            onClick={handleMenuToggle} // 메뉴 토글
+          />
         </div>
       </header>
       <div className="relative aspect-square w-full items-center justify-center">
@@ -147,7 +159,6 @@ export default function DetailProduct() {
           </span>
         </div>
       </div>
-
       <div className="p-5 pb-0">
         <div>
           <h1 className="text-2xl font-semibold">{post.title}</h1>
@@ -168,7 +179,6 @@ export default function DetailProduct() {
       <div className="px-5 py-4">
         <p className="text-lg">{post.content}</p>
       </div>
-
       <div className="fixed w-full bottom-0 left-0 border-t py-2 px-4 bg-white flex justify-between items-center gap-3">
         <div className="flex justify-end border-gray-300 border-2 rounded-md p-2">
           <div className="flex flex-col items-center justify-center">
@@ -190,7 +200,18 @@ export default function DetailProduct() {
             <ChatBubbleOvalLeftEllipsisIcon className="size-8 items-center" />
           </div>
         </button>
-      </div>
+      </div>{" "}
+      {/* ContextMenu */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-10">
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50"
+            onClick={handleMenuClose}
+          ></div>
+
+          <ContextMenu />
+        </div>
+      )}
     </div>
   );
 }
