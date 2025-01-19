@@ -26,6 +26,7 @@ export default function DetailProduct() {
   const [loading, setLoading] = useState(false);
   const [writerId, setWriterId] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false); // 메뉴 열림 상태 관리
+  const [isAuthor, setIsAuthor] = useState(false); // 작성자인지 여부
 
   const navigate = useNavigate();
   // 상품 상세 정보 가져오기
@@ -34,6 +35,7 @@ export default function DetailProduct() {
       const response = await getDetailProduct(Number(id));
       setPost(response.data);
       setWriterId(response.data.writerId);
+      setIsAuthor(response.data.isAuthor);
       console.log(response);
     } catch (error) {
       console.log(error);
@@ -104,15 +106,6 @@ export default function DetailProduct() {
     }
   };
 
-  const handleDeletePost = async () => {
-    try {
-      const response = await deletePost(Number(id));
-      alert("삭제성공");
-    } catch (error) {
-      alert("삭제 실패");
-    }
-  };
-
   const handleMenuToggle = () => {
     setIsMenuOpen((prev) => !prev);
   };
@@ -148,9 +141,7 @@ export default function DetailProduct() {
         <div className="flex gap-1 items-center">
           <h3 className="text-lg">{post.userNickname}님</h3>
         </div>
-        <button onClick={handleDeletePost}>
-          <TrashIcon className="h-6 w-6 text-gray-500" />
-        </button>
+
         <div className="flex-grow"></div>
         <div className="flex flex-col text-right w-20 justify-center">
           <MannerScoreBar score={3.5} />
@@ -209,7 +200,19 @@ export default function DetailProduct() {
             onClick={handleMenuClose}
           ></div>
 
-          <ContextMenu />
+          {/* 컨텍스트 메뉴: isAuthor에 따라 조건부 렌더링 */}
+          {isAuthor ? (
+            <ContextMenu
+              options={[
+                { label: "수정", onClick: () => console.log("수정") },
+                { label: "삭제", onClick: () => console.log("삭제") },
+              ]}
+            />
+          ) : (
+            <ContextMenu
+              options={[{ label: "신고", onClick: () => console.log("신고") }]}
+            />
+          )}
         </div>
       )}
     </div>
