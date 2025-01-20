@@ -18,6 +18,7 @@ import FindPassword from "./pages/findPassword";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import UserProfile from "./pages/userProfile";
 import Like from "./pages/like";
+import ModifyPost from "./pages/modifyPost";
 
 // QueryClient 생성
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ function App() {
               element={<UserProfile />}
             ></Route>
             <Route path="/like" element={<Like />}></Route>
+            <Route path="/modifyPost/:id" element={<ModifyPost />}></Route>
           </Routes>
         </AuthProvider>
       </Router>
