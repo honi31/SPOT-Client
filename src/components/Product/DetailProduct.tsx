@@ -1,8 +1,7 @@
 import { UserIcon } from "@heroicons/react/24/solid";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ChatBubbleOvalLeftEllipsisIcon } from "@heroicons/react/24/outline";
 import { ChevronLeftIcon } from "@heroicons/react/24/outline";
-import { FaceFrownIcon } from "@heroicons/react/24/outline";
 import { HeartIcon } from "@heroicons/react/24/outline";
 import { HeartIcon as SolidHeartIcon } from "@heroicons/react/24/solid";
 import { useEffect, useState } from "react";
@@ -13,9 +12,8 @@ import { addWish } from "../../api/like/addWish";
 import { cancelWish } from "../../api/like/cancelWish";
 import { createChatRoom } from "../../api/chat/chat";
 import { enterChat } from "../../api/chat/enterChat";
-import { TrashIcon } from "@heroicons/react/24/outline";
-import { deletePost } from "../../api/product/deletePost";
 import ContextMenu from "../Menu/ContextMenu";
+import { downloadImage } from "../../api/s3/downloadImage";
 
 export default function DetailProduct() {
   const { id } = useParams<{ id: string }>();
@@ -27,7 +25,8 @@ export default function DetailProduct() {
   const [writerId, setWriterId] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false); // 메뉴 열림 상태 관리
   const [isAuthor, setIsAuthor] = useState(false); // 작성자인지 여부
-
+  const [filenames, setFilenames] = useState<string[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]); // 다운로드한 이미지 URL
   const navigate = useNavigate();
   // 상품 상세 정보 가져오기
   const handleDetailProduct = async () => {
@@ -36,6 +35,7 @@ export default function DetailProduct() {
       setPost(response.data);
       setWriterId(response.data.writerId);
       setIsAuthor(response.data.isAuthor);
+      setFilenames(response.data.images || []);
       console.log(response);
     } catch (error) {
       console.log(error);
@@ -45,6 +45,29 @@ export default function DetailProduct() {
   useEffect(() => {
     handleDetailProduct();
   }, [id]); // id가 변경될 때마다 다시 호출
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        // 모든 filenames에 대해 다운로드 요청
+        const allUrls = await Promise.all(
+          filenames.map(async (filename) => {
+            const response = await downloadImage(filename);
+            const values = Object.values(response?.data || {}) as string[];
+
+            return values;
+          })
+        );
+
+        const urls = allUrls.flat();
+
+        setImageUrls(urls.filter((url) => url));
+      } catch (error) {
+        console.error("이미지 다운로드 실패:", error);
+      }
+    };
+    fetchImages();
+  }, [filenames]);
 
   const handleWishToggle = async () => {
     if (loading) return; // 중복 클릭 방지
@@ -113,6 +136,7 @@ export default function DetailProduct() {
   const handleMenuClose = () => {
     setIsMenuOpen(false);
   };
+
   return (
     <div>
       <header className="w-full border-b flex justify-between items-center">
@@ -128,11 +152,22 @@ export default function DetailProduct() {
         </div>
       </header>
       <div className="relative aspect-square w-full items-center justify-center">
-        <img
-          src={post.title}
-          alt={post.title}
-          className="object-cover size-full"
-        />
+        {imageUrls.length > 0 ? (
+          imageUrls.map((url, index) => (
+            <div
+              key={index}
+              className="relative aspect-square w-full items-center justify-center"
+            >
+              <img
+                src={url}
+                alt={`상품 이미지 ${index + 1}`}
+                className="object-cover w-full rounded-lg"
+              />
+            </div>
+          ))
+        ) : (
+          <div>이미지를 불러오는 중입니다...</div>
+        )}
       </div>
       <div className="p-5 flex items-center gap-3 border-b">
         <div onClick={toProfile} className="size-9 rounded-full">
