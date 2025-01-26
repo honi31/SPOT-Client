@@ -186,6 +186,11 @@ export default function DetailProduct() {
         </div>
       </div>
       <div className="p-5 pb-0">
+        {post.isAuthor && (
+          <div>
+            <select name="상태" id="status"></select>
+          </div>
+        )}
         <div>
           <h1 className="text-2xl font-semibold">{post.title}</h1>
           <p>{post.date}</p>
