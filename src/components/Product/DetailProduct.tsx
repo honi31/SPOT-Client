@@ -27,7 +27,16 @@ export default function DetailProduct() {
   const [isAuthor, setIsAuthor] = useState(false); // 작성자인지 여부
   const [filenames, setFilenames] = useState<string[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>([]); // 다운로드한 이미지 URL
+  const [status, setStatus] = useState("판매중");
+
+  const handleStatusChange = async (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const newStatus = e.target.value;
+    setStatus(newStatus);
+  };
   const navigate = useNavigate();
+
   // 상품 상세 정보 가져오기
   const handleDetailProduct = async () => {
     try {
@@ -188,7 +197,16 @@ export default function DetailProduct() {
       <div className="p-5 pb-0">
         {post.isAuthor && (
           <div>
-            <select name="상태" id="status"></select>
+            <select
+              name="상태"
+              id="status"
+              value={status}
+              onChange={handleStatusChange}
+            >
+              <option value="판매중">판매중</option>
+              <option value="판매완료">판매완료</option>
+              <option value="삭제">삭제</option>
+            </select>
           </div>
         )}
         <div>
