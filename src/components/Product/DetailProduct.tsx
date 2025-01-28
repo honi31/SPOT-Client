@@ -196,12 +196,13 @@ export default function DetailProduct() {
       </div>
       <div className="p-5 pb-0">
         {post.isAuthor && (
-          <div>
+          <div className="pb-5">
             <select
               name="상태"
               id="status"
               value={status}
               onChange={handleStatusChange}
+              className="border p-1.5 text-sm font-semibold"
             >
               <option value="판매중">판매중</option>
               <option value="판매완료">판매완료</option>
