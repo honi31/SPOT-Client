@@ -14,6 +14,7 @@ import { createChatRoom } from "../../api/chat/chat";
 import { enterChat } from "../../api/chat/enterChat";
 import ContextMenu from "../Menu/ContextMenu";
 import { downloadImage } from "../../api/s3/downloadImage";
+import { updateStatus } from "../../api/product/updateStatus";
 
 export default function DetailProduct() {
   const { id } = useParams<{ id: string }>();
@@ -32,8 +33,14 @@ export default function DetailProduct() {
   const handleStatusChange = async (
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
-    const newStatus = e.target.value;
-    setStatus(newStatus);
+    try {
+      const newStatus = e.target.value;
+      setStatus(newStatus);
+      const response = await updateStatus(Number(id), newStatus);
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
   };
   const navigate = useNavigate();
 
