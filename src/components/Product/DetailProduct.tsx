@@ -177,7 +177,7 @@ export default function DetailProduct() {
               <img
                 src={url}
                 alt={`상품 이미지 ${index + 1}`}
-                className="object-cover w-full rounded-lg"
+                className="object-cover w-full rounded-lg h-full"
               />
             </div>
           ))
