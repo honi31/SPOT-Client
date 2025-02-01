@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getMajorPost } from "../../api/home/getMajorPost";
+import { getWishList } from "../../api/like/getWishList";
 
 type Post = {
   id: number;
@@ -10,7 +11,9 @@ type Post = {
 
 export default function MainContent() {
   const skeletonArray = Array(20).fill(0);
+
   const [posts, setPosts] = useState<Post[]>([]); // 게시글 상태
+  const [likeList, setLikeList] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(true); // 로딩 상태
 
   useEffect(() => {
@@ -32,8 +35,19 @@ export default function MainContent() {
         setLoading(false); // 로딩 상태 종료
       }
     };
-
+    const fetchLikeList = async () => {
+      try {
+        setLoading(true);
+        const response = await getWishList();
+        setLikeList(Array.isArray(response) ? response : []);
+      } catch (error) {
+        console.error("찜 리스트 불러오기 실패", error);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchPosts();
+    fetchLikeList();
   }, []);
 
   return (
@@ -123,21 +137,46 @@ export default function MainContent() {
             <p className="text-sm pr-4 text-gray-500 mt-4">더보기</p>
           </div>
           <div className="flex overflow-x-auto gap-4">
-            {skeletonArray.map((_, index) => (
-              <div
-                key={index}
-                className="flex-shrink-0 border border-gray-400 shadow-lg p-3 bg-white rounded-md"
-                style={{ width: "150px" }}
-              >
-                <div className="w-full h-32 bg-gray-300 animate-pulse rounded-md"></div>
-                <div className="mt-2">
-                  <p className="text-sm font-semibold text-gray-700">
-                    상품 제목 {index + 1}
-                  </p>
-                  <p className="text-sm text-gray-500">15,000원</p>
-                </div>
-              </div>
-            ))}
+            {loading
+              ? skeletonArray.map((_, index) => (
+                  <div
+                    key={index}
+                    className="flex-shrink-0 border border-gray-400 shadow-lg p-3 bg-white rounded-md"
+                    style={{ width: "150px" }}
+                  >
+                    <div className="w-full h-32 bg-gray-300 animate-pulse rounded-md"></div>
+                    <div className="mt-2">
+                      <p className="text-sm font-semibold text-gray-700">
+                        로딩 중...
+                      </p>
+                      <p className="text-sm text-gray-500">-</p>
+                    </div>
+                  </div>
+                ))
+              : likeList.map((post) => (
+                  <div
+                    key={post.id}
+                    className="flex-shrink-0 border border-gray-400 shadow-lg p-3 bg-white rounded-md"
+                    style={{ width: "150px" }}
+                  >
+                    <div
+                      className="w-full h-32 bg-gray-300 rounded-md"
+                      style={{
+                        backgroundImage: `url(${post.image || ""})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }}
+                    ></div>
+                    <div className="mt-2">
+                      <p className="text-sm font-semibold text-gray-700">
+                        {post.title}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {post.price.toLocaleString()}원
+                      </p>
+                    </div>
+                  </div>
+                ))}
           </div>
         </div>
       </div>
