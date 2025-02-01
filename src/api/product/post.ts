@@ -69,3 +69,29 @@ export async function getDetailProduct(postId: number) {
     throw error;
   }
 }
+export async function getFilterPosts({
+  limit,
+  lastPostId,
+  postFor,
+  category,
+}: {
+  limit: number;
+  lastPostId?: number;
+  postFor: string;
+  category: string;
+}) {
+  try {
+    const params = { limit, lastPostId, postFor, category };
+    const response = await apiClient.get(`/api/posts/querydsl`, {
+      params,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    console.log("살래요/팔래요 게시글 반환 성공:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("살래요/팔래요 게시글 반환 실패:", error);
+    throw error;
+  }
+}
