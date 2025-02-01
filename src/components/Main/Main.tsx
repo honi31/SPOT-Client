@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { getMajorPost } from "../../api/home/getMajorPost";
 import { getWishList } from "../../api/like/getWishList";
+import { downloadImage } from "../../api/s3/downloadImage";
 
 type Post = {
   id: number;
   title: string;
   price: number;
-  image?: string; // 이미지가 선택적으로 포함될 수 있음
+  image?: string;
 };
 
 export default function MainContent() {
@@ -15,7 +16,17 @@ export default function MainContent() {
   const [posts, setPosts] = useState<Post[]>([]); // 게시글 상태
   const [likeList, setLikeList] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(true); // 로딩 상태
+  const fetchImage = async (filename: string) => {
+    try {
+      const response = await downloadImage(filename);
+      const values = Object.values(response?.data || {}) as string[];
 
+      return values.length > 0 ? values[0] : "";
+    } catch (error) {
+      console.error("이미지 다운로드 실패:", error);
+      return "";
+    }
+  };
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -39,7 +50,15 @@ export default function MainContent() {
       try {
         setLoading(true);
         const response = await getWishList();
-        setLikeList(Array.isArray(response) ? response : []);
+        const updatedLikeList = await Promise.all(
+          response.map(async (post: any) => ({
+            id: post.postId,
+            title: post.title,
+            price: post.price,
+            image: post.image ? await fetchImage(post.image) : "",
+          }))
+        );
+        setLikeList(updatedLikeList);
       } catch (error) {
         console.error("찜 리스트 불러오기 실패", error);
       } finally {
@@ -159,14 +178,11 @@ export default function MainContent() {
                     className="flex-shrink-0 border border-gray-400 shadow-lg p-3 bg-white rounded-md"
                     style={{ width: "150px" }}
                   >
-                    <div
-                      className="w-full h-32 bg-gray-300 rounded-md"
-                      style={{
-                        backgroundImage: `url(${post.image || ""})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                      }}
-                    ></div>
+                    <img
+                      src={post.image}
+                      alt="찜한 상품 이미지"
+                      className="w-full h-32 object-cover rounded-md"
+                    />
                     <div className="mt-2">
                       <p className="text-sm font-semibold text-gray-700">
                         {post.title}
