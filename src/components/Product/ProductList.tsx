@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getPurposePosts } from "../../api/product/post";
+import { getFilterPosts, getPurposePosts } from "../../api/product/post";
 
 interface Post {
   postId: number;
@@ -31,39 +31,56 @@ export default function ProductList({ selectedTab }: ProductListProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // 카테고리 추출
+  const searchParams = new URLSearchParams(location.search);
+  const category = searchParams.get("category") || "";
+
   // 게시글 가져오기
   const fetchPosts = async (isInitialLoad = false) => {
-    if (isLoading || (!hasMore && !isInitialLoad)) return; // 중복 호출 방지 및 더 가져올 데이터가 없을 때
+    if (isLoading || (!hasMore && !isInitialLoad)) return;
 
     setIsLoading(true);
 
     try {
-      const response = await getPurposePosts({
-        limit: 10,
-        lastPostId: isInitialLoad ? undefined : lastPostId ?? undefined,
-        postFor: selectedTab === "팔래요" ? "SALE" : "PURCHASE",
-      });
+      let response: { posts: Post[]; hasNext: boolean };
 
-      if (isInitialLoad) {
-        // 초기 로드 시 기존 데이터 삭제
-        setPosts(response.posts);
+      if (!category) {
+        // 전체 카테고리일 때 getPurposePosts 호출
+        response = await getPurposePosts({
+          limit: 10,
+          lastPostId: isInitialLoad ? undefined : lastPostId ?? undefined,
+          postFor: selectedTab === "팔래요" ? "SALE" : "PURCHASE",
+        });
       } else {
-        // 무한 스크롤 시 데이터 추가
-        setPosts((prevPosts) => [...prevPosts, ...response.posts]);
+        // 특정 카테고리 선택 시 getFilterPosts 호출
+        response = await getFilterPosts({
+          limit: 10,
+          lastPostId: isInitialLoad ? undefined : lastPostId ?? undefined,
+          postFor: selectedTab === "팔래요" ? "SALE" : "PURCHASE",
+          category,
+        });
       }
 
-      // 상태 업데이트
+      console.log("게시글 리스트 불러오기 API 응답:", response);
+
+      if (isInitialLoad) {
+        setPosts(response.posts || []);
+      } else {
+        setPosts((prevPosts) => [...prevPosts, ...(response.posts || [])]);
+      }
+
       setLastPostId(
-        response.lastId && response.lastId > 0 ? response.lastId - 1 : null
+        response.posts?.length > 0
+          ? response.posts[response.posts.length - 1].postId
+          : null
       );
-      setHasMore(response.hasMore);
+      setHasMore(response.hasNext ?? false);
     } catch (error) {
       console.error("Error fetching posts:", error);
     } finally {
       setIsLoading(false);
     }
   };
-
   // 탭 변경 시 상태 초기화
   useEffect(() => {
     setPosts([]); // 기존 게시글 초기화
@@ -99,7 +116,7 @@ export default function ProductList({ selectedTab }: ProductListProps) {
   return (
     <>
       <div className="mt-4 w-full max-w-screen-sm mx-auto relative">
-        {posts.length > 0 ? (
+        {posts?.length > 0 ? (
           posts.map((post: Post) => (
             <div
               key={post.postId}
