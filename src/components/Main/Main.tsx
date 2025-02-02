@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getMajorPost } from "../../api/home/getMajorPost";
 import { getWishList } from "../../api/like/getWishList";
 import { downloadImage } from "../../api/s3/downloadImage";
+import { getFilterPosts } from "../../api/product/post";
 
 type Post = {
   id: number;
@@ -15,6 +16,7 @@ export default function MainContent() {
 
   const [posts, setPosts] = useState<Post[]>([]); // 게시글 상태
   const [likeList, setLikeList] = useState<Post[]>([]);
+  const [popularPosts, setPopularPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(true); // 로딩 상태
   const fetchImage = async (filename: string) => {
     try {
@@ -65,6 +67,34 @@ export default function MainContent() {
         setLoading(false);
       }
     };
+    const fetchPopularList = async () => {
+      try {
+        setLoading(true);
+        const response = await getFilterPosts({
+          limit: 10,
+          category: "",
+          sortBy: "POPULAR",
+        });
+
+        const data = response.content || [];
+
+        const updatedPopularPosts = await Promise.all(
+          data.map(async (post: any) => ({
+            id: post.postId,
+            title: post.title,
+            price: post.price,
+            image: post.image ? await fetchImage(post.image) : "",
+          }))
+        );
+
+        setPopularPosts(updatedPopularPosts);
+      } catch (error) {
+        console.error("인기 게시글 데이터 가져오기 실패:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPopularList();
     fetchPosts();
     fetchLikeList();
   }, []);
@@ -79,21 +109,46 @@ export default function MainContent() {
             <p className="text-sm pr-4 text-gray-500 mt-4">더보기</p>
           </div>
           <div className="flex overflow-x-auto gap-4">
-            {skeletonArray.map((_, index) => (
-              <div
-                key={index}
-                className="flex-shrink-0 border border-gray-400 shadow-lg p-3 bg-white rounded-md"
-                style={{ width: "150px" }}
-              >
-                <div className="w-full h-32 bg-gray-300 animate-pulse rounded-md"></div>
-                <div className="mt-2">
-                  <p className="text-sm font-semibold text-gray-700">
-                    상품 제목 {index + 1}
-                  </p>
-                  <p className="text-sm text-gray-500">20,000원</p>
-                </div>
-              </div>
-            ))}
+            {loading
+              ? skeletonArray.map((_, index) => (
+                  <div
+                    key={index}
+                    className="flex-shrink-0 border border-gray-400 shadow-lg p-3 bg-white rounded-md"
+                    style={{ width: "150px" }}
+                  >
+                    <div className="w-full h-32 bg-gray-300 animate-pulse rounded-md"></div>
+                    <div className="mt-2">
+                      <p className="text-sm font-semibold text-gray-700">
+                        로딩 중...
+                      </p>
+                      <p className="text-sm text-gray-500">-</p>
+                    </div>
+                  </div>
+                ))
+              : popularPosts.map((post) => (
+                  <div
+                    key={post.id}
+                    className="flex-shrink-0 border border-gray-400 shadow-lg p-3 bg-white rounded-md"
+                    style={{ width: "150px" }}
+                  >
+                    <div
+                      className="w-full h-32 bg-gray-300 rounded-md"
+                      style={{
+                        backgroundImage: `url(${post.image || ""})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }}
+                    ></div>
+                    <div className="mt-2">
+                      <p className="text-sm font-semibold text-gray-700">
+                        {post.title}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        {post.price.toLocaleString()}원
+                      </p>
+                    </div>
+                  </div>
+                ))}
           </div>
         </div>
 

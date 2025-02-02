@@ -74,14 +74,17 @@ export async function getFilterPosts({
   lastPostId,
   postFor,
   category,
+  sortBy,
 }: {
   limit: number;
   lastPostId?: number;
-  postFor: string;
+  postFor?: string;
   category: string;
+  sortBy?: string;
 }) {
   try {
-    const params = { limit, lastPostId, postFor, category };
+    const params: any = { limit, lastPostId, postFor, category };
+    if (sortBy) params.sortBy = sortBy;
     const response = await apiClient.get(`/api/posts/querydsl`, {
       params,
       headers: {
