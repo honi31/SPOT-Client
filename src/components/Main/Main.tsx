@@ -40,7 +40,7 @@ export default function MainContent() {
         });
 
         // content 배열 추출
-        const data = response.content || [];
+        const data = response.posts || [];
         setPosts(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("게시글 데이터 가져오기 실패:", error);
@@ -76,7 +76,7 @@ export default function MainContent() {
           sortBy: "POPULAR",
         });
 
-        const data = response.content || [];
+        const data = response.posts || [];
 
         const updatedPopularPosts = await Promise.all(
           data.map(async (post: any) => ({
