@@ -41,7 +41,7 @@ export default function MainContent() {
     }
   };
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchMajorList = async () => {
       try {
         setLoading(true);
         const response = await getMajorPost({
@@ -50,13 +50,23 @@ export default function MainContent() {
           sortBy: "LATEST",
         });
 
-        // content 배열 추출
         const data = response.posts || [];
-        setPosts(Array.isArray(data) ? data : []);
+
+        const updatedMajorPosts = await Promise.all(
+          data.map(async (post: any) => ({
+            id: post.postId,
+            title: post.title,
+            price: post.price,
+            image: post.firstImageUrl
+              ? await fetchImage(post.firstImageUrl)
+              : "",
+          }))
+        );
+        setPosts(updatedMajorPosts);
       } catch (error) {
         console.error("게시글 데이터 가져오기 실패:", error);
       } finally {
-        setLoading(false); // 로딩 상태 종료
+        setLoading(false);
       }
     };
     const fetchLikeList = async () => {
@@ -106,7 +116,7 @@ export default function MainContent() {
       }
     };
     fetchPopularList();
-    fetchPosts();
+    fetchMajorList();
     fetchLikeList();
   }, []);
 
