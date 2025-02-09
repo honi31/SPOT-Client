@@ -204,14 +204,11 @@ export default function MainContent() {
                     className="flex-shrink-0 border border-gray-400 shadow-lg p-3 bg-white rounded-md"
                     style={{ width: "150px" }}
                   >
-                    <div
-                      className="w-full h-32 bg-gray-300 rounded-md"
-                      style={{
-                        backgroundImage: `url(${post.image || ""})`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                      }}
-                    ></div>
+                    <img
+                      src={post.image}
+                      alt="전공별 인기 상품 이미지"
+                      className="w-full h-32 object-cover rounded-md"
+                    />
                     <div className="mt-2">
                       <p className="text-sm font-semibold text-gray-700">
                         {post.title}
