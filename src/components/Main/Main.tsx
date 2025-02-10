@@ -29,17 +29,7 @@ export default function MainContent() {
       return "";
     }
   };
-  const fetchMajorImage = async (filename: string) => {
-    try {
-      const response = await downloadImage(filename);
-      const values = Object.values(response?.data || {}) as string[];
 
-      return values.length > 0 ? values[0] : "";
-    } catch (error) {
-      console.error("이미지 다운로드 실패:", error);
-      return "";
-    }
-  };
   useEffect(() => {
     const fetchMajorList = async () => {
       try {
@@ -124,11 +114,11 @@ export default function MainContent() {
 
   return (
     <>
-      <div className="flex flex-col justify-between p-5 w-full min-h-screen mb-16">
+      <div className="flex flex-col justify-between px-5 w-full min-h-screen mb-16">
         {/* 전체 인기순 섹션 */}
         <div className="flex flex-col gap-3">
-          <div className="flex justify-between">
-            <h4 className="text-[22px] font-bold">전체 인기순 👍</h4>
+          <div className="flex justify-between items-center">
+            <h4 className="text-[20px] font-bold">전체 인기순 👍</h4>
             <p className="text-sm pr-4 text-gray-500 mt-4">더보기</p>
           </div>
           <div className="flex overflow-x-auto gap-4">
@@ -174,8 +164,8 @@ export default function MainContent() {
 
         {/* 우리 학과에서 hot한 상품 섹션 */}
         <div className="flex flex-col gap-3">
-          <div className="flex justify-between">
-            <h4 className="text-[22px] font-bold">
+          <div className="flex justify-between items-center">
+            <h4 className="text-[20px] font-bold">
               우리 학과에서 hot한 상품 🔥
             </h4>
             <p className="text-sm pr-4 text-gray-500 mt-4">더보기</p>
