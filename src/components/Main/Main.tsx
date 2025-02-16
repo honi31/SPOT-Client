@@ -114,7 +114,7 @@ export default function MainContent() {
 
   return (
     <>
-      <div className="flex flex-col justify-between px-5 w-full min-h-screen mb-16">
+      <div className="flex flex-col justify-between px-5 w-full min-h-screen pt-2 mb-20">
         {/* 전체 인기순 섹션 */}
         <div className="flex flex-col gap-3">
           <div className="flex justify-between items-center">
@@ -214,7 +214,7 @@ export default function MainContent() {
         {/* 나의 찜 리스트 섹션 */}
         <div className="flex flex-col gap-3">
           <div className="flex justify-between">
-            <h4 className="text-[22px] font-bold">나의 찜 리스트 💚</h4>
+            <h4 className="text-[20px] font-bold">나의 찜 리스트 💚</h4>
             <p className="text-sm pr-4 text-gray-500 mt-4">더보기</p>
           </div>
           <div className="flex overflow-x-auto gap-4">
