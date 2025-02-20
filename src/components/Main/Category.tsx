@@ -11,8 +11,13 @@ export default function Category() {
     return `/product?${newSearchParams.toString()}`;
   };
 
-  const getLinkClass = (category: string) =>
-    selectedCategory === category ? "text-black" : "text-gray-400";
+  const getLinkClass = (category: string) => {
+    if (location.pathname !== "/product") {
+      // URL이 "/product"가 아닌 경우 항상 회색 처리
+      return "text-gray-400";
+    }
+    return selectedCategory === category ? "text-black" : "text-gray-400";
+  };
 
   return (
     <div className="w-full bg-white h-12 border border-gray-200 flex justify-between items-center text-md font-semibold">
@@ -42,7 +47,7 @@ export default function Category() {
       </Link>
       <Link
         to={getCategoryLink("ELECTRONIC")}
-        className={`flex-1 text-center ${getLinkClass("ELECTORONIC")}`}
+        className={`flex-1 text-center ${getLinkClass("ELECTRONIC")}`}
       >
         전자기기
       </Link>
